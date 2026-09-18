@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { api, ApiClientError } from "@/lib/api";
 
-const SESSION_MARKER_KEY = "tic-tac-toe-session-created";
+const SESSION_MARKER_KEY = "multiplayer-games-session-created";
 
 interface SessionContextValue {
   playerId: string | null;

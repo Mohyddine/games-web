@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/context/SessionContext";
 import { useRoom } from "@/context/RoomContext";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 function Spinner() {
   return (
     <svg
-      className="animate-spin h-5 w-5"
+      className="h-5 w-5 animate-spin"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -31,25 +31,18 @@ export default function WaitingPage() {
   const [hasCheckedRoom, setHasCheckedRoom] = useState(false);
   const [, startTransition] = useTransition();
 
-  // Redirect if unauthenticated
   useEffect(() => {
     if (!isSessionLoading && (!isInitialized || !name?.trim())) {
-      startTransition(() => {
-        router.replace("/session");
-      });
+      startTransition(() => router.replace("/session"));
     }
   }, [isInitialized, isSessionLoading, name, router]);
 
-  // Automatically navigate to /game when countdown/match starts
   useEffect(() => {
     if (room && (room.gameStatus === "COUNTDOWN" || room.gameStatus === "PLAYING")) {
-      startTransition(() => {
-        router.replace("/game");
-      });
+      startTransition(() => router.replace("/game"));
     }
   }, [room, router]);
 
-  // Restore room on initial mount if not yet populated
   useEffect(() => {
     if (isInitialized && !isSessionLoading) {
       (async () => {
@@ -57,9 +50,7 @@ export default function WaitingPage() {
           const activeRoom = await restoreRoom();
           setHasCheckedRoom(true);
           if (!activeRoom) {
-            startTransition(() => {
-              router.replace("/home");
-            });
+            startTransition(() => router.replace("/home"));
           }
         } else {
           setHasCheckedRoom(true);
@@ -70,6 +61,7 @@ export default function WaitingPage() {
 
   const handleCopyCode = async () => {
     if (!room?.code) return;
+
     try {
       await navigator.clipboard.writeText(room.code);
     } catch {
@@ -80,6 +72,7 @@ export default function WaitingPage() {
       document.execCommand("copy");
       document.body.removeChild(textarea);
     }
+
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -88,17 +81,16 @@ export default function WaitingPage() {
     setIsLeaving(true);
     const success = await leaveRoom();
     setIsLeaving(false);
+
     if (success) {
-      startTransition(() => {
-        router.replace("/home");
-      });
+      startTransition(() => router.replace("/home"));
     }
   };
 
   if (isSessionLoading || !hasCheckedRoom || isLoadingRoom) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-4 min-h-screen">
-        <div className="flex items-center gap-3 text-zinc-400 text-sm">
+      <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
+        <div className="flex items-center gap-3 text-sm text-zinc-400">
           <Spinner />
           <span>Loading room…</span>
         </div>
@@ -108,148 +100,105 @@ export default function WaitingPage() {
 
   if (!room) return null;
 
-  const currentPlayer = room.players.find((p) => p.playerId === playerId);
+  const currentPlayer = room.players.find((player) => player.playerId === playerId);
   const isHost = currentPlayer?.isCreator ?? false;
-
-  // Render code with wider spacing
   const spacedCode = room.code.split("").join("  ");
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 min-h-screen">
-      <div className="w-full max-w-sm flex flex-col items-center gap-5">
-
-        {/* Title */}
+    <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md space-y-5">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Waiting for opponent
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Share your code to invite a friend
-          </p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Lobby</p>
+          <h1 className="mt-2 text-3xl font-black tracking-[-0.06em] text-zinc-900 dark:text-zinc-50">Waiting for opponent</h1>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Share the code below and get ready to play.</p>
         </div>
 
-        {/* Animated pulsing indicator */}
-        <div className="relative flex items-center justify-center h-14 w-14">
-          <span className="absolute w-14 h-14 rounded-full bg-indigo-500/10 animate-pulse-ring" />
-          <span
-            className="absolute w-10 h-10 rounded-full bg-indigo-500/15 animate-pulse-ring"
-            style={{ animationDelay: "400ms" }}
-          />
-          <span className="relative w-4 h-4 rounded-full bg-indigo-500 shadow-md shadow-indigo-500/40" />
+        <div className="relative flex items-center justify-center">
+          <span className="absolute h-16 w-16 rounded-full bg-indigo-500/10 animate-pulse" />
+          <span className="absolute h-12 w-12 rounded-full bg-indigo-500/15 animate-pulse" style={{ animationDelay: "250ms" }} />
+          <span className="relative h-4 w-4 rounded-full bg-indigo-500 shadow-md shadow-indigo-500/30" />
         </div>
 
-        {/* Room code card */}
-        <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col items-center gap-4">
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
-            Room Code
-          </span>
-
-          <div
-            id="room-code-display"
-            className="font-mono text-4xl font-black tracking-[0.2em] text-zinc-900 dark:text-zinc-50 select-all leading-none"
-          >
-            {spacedCode}
+        <div className="rounded-[1.8rem] border border-zinc-200/80 bg-white/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+          <div className="mb-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-500">Room code</p>
+            <div id="room-code-display" className="mt-3 font-mono text-[2.1rem] font-black tracking-[0.22em] text-zinc-900 dark:text-zinc-50">
+              {spacedCode}
+            </div>
           </div>
 
           <button
             id="copy-code-btn"
             type="button"
             onClick={handleCopyCode}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 cursor-pointer"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
             {copied ? (
               <>
-                <svg
-                  className="w-4 h-4 text-emerald-500"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
+                <svg className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+                <span className="text-emerald-600">Copied!</span>
               </>
             ) : (
               <>
-                <svg
-                  className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg>
-                <span className="text-zinc-700 dark:text-zinc-300">Copy Code</span>
+                <span>Copy code</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Players list */}
-        <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col gap-2.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
-            Players ({room.players.length}/2)
-          </span>
+        <div className="rounded-[1.8rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Players</p>
+            <span className="text-xs text-zinc-500">{room.players.length}/2</span>
+          </div>
 
-          <div className="flex flex-col gap-1.5">
-            {room.players.map((p) => (
+          <div className="space-y-2">
+            {room.players.map((player) => (
               <div
-                key={p.playerId}
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-800"
+                key={player.playerId}
+                className="flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">
-                    {p.displayName || p.name}
+                  <span className={[
+                    "h-2.5 w-2.5 rounded-full",
+                    player.connected ? "bg-emerald-500" : "bg-amber-500",
+                  ].join(" ")}
+                  />
+                  <span className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                    {player.displayName || player.name}
                   </span>
-                  {p.playerId === playerId && (
-                    <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
+                  {player.playerId === playerId && (
+                    <span className="rounded-md bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                       You
                     </span>
                   )}
                 </div>
-                <span className="text-xs text-zinc-400 shrink-0">
-                  {p.isCreator ? "Host" : "Guest"}
+
+                <span className="text-[11px] text-zinc-500">
+                  {player.isCreator ? (isHost ? "Host" : "Host") : "Guest"}
                 </span>
               </div>
             ))}
-
-            {room.players.length < 2 && (
-              <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 text-zinc-400">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2 h-2 rounded-full border-2 border-zinc-300 dark:border-zinc-700 shrink-0" />
-                  <span className="text-sm italic">Waiting for player 2…</span>
-                </div>
-                <span className="text-xs">Guest</span>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="w-full flex flex-col items-center gap-3">
+        <div className="flex gap-3">
           <Button
-            id="leave-game-btn"
-            variant="danger"
-            size="md"
-            className="w-full"
-            isLoading={isLeaving}
+            type="button"
+            variant="outline"
+            className="flex-1 rounded-2xl"
             onClick={handleLeaveRoom}
+            disabled={isLeaving}
+            isLoading={isLeaving}
           >
-            Leave Room
+            Leave room
           </Button>
-
-          <p className="text-xs text-zinc-400 dark:text-zinc-600">
-            Playing as{" "}
-            <span className="font-semibold text-zinc-500 dark:text-zinc-400">{name}</span>
-            {" · "}
-            {isHost ? "Host" : "Guest"}
-          </p>
         </div>
       </div>
     </main>

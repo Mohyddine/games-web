@@ -1,4 +1,4 @@
-import type { GameStatus } from "./game";
+import type { GameStatus, GameType } from "./game";
 
 export interface ApiSuccessResponse<T> {
   success: true;
@@ -27,6 +27,7 @@ export interface SessionData {
 
 export interface CreateRoomData {
   code: string;
+  gameType: GameType;
   gameStatus: GameStatus;
 }
 

@@ -5,7 +5,7 @@ import type {
   CreateRoomData,
   LeaveRoomData,
 } from "@/types/api";
-import type { Room } from "@/types/game";
+import type { GameType, Room } from "@/types/game";
 import { API_BASE_URL } from "@/lib/config";
 
 export class ApiClientError extends Error {
@@ -77,9 +77,10 @@ export const api = {
   },
 
   // Room: Create a new room
-  createRoom: async (): Promise<CreateRoomData> => {
+  createRoom: async (gameType: GameType): Promise<CreateRoomData> => {
     return request<CreateRoomData>("/api/v1/rooms", {
       method: "POST",
+      body: JSON.stringify({ gameType }),
     });
   },
 

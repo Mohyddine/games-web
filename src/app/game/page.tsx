@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/context/SessionContext";
 import { useRoom } from "@/context/RoomContext";
@@ -8,17 +8,20 @@ import { Board } from "@/components/game/Board";
 import { CountdownOverlay } from "@/components/game/CountdownOverlay";
 import { TurnIndicator } from "@/components/game/TurnIndicator";
 import { PlayerCard } from "@/components/game/PlayerCard";
-import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
-import type { BoardState } from "@/types/game";
+import { Button } from "@/components/ui/Button";
+import type { BoardState, GameType, RpsChoice } from "@/types/game";
 
-// ─── Visual-only helper to find winning cells from final board ─────────────
-// This is NEVER used to determine the winner — backend is authoritative.
-// Used only to highlight winning cells in the UI after backend reports FINISHED.
 const WIN_LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6],
+];
+
+const RPS_CHOICES: Array<{ value: RpsChoice; label: string; emoji: string }> = [
+  { value: "ROCK", label: "Rock", emoji: "🪨" },
+  { value: "PAPER", label: "Paper", emoji: "📄" },
+  { value: "SCISSORS", label: "Scissors", emoji: "✂️" },
 ];
 
 function getVisualWinningCells(board: BoardState): number[] {
@@ -27,14 +30,19 @@ function getVisualWinningCells(board: BoardState): number[] {
       return [a, b, c];
     }
   }
+
   return [];
 }
 
-// ─── Small spinner ─────────────────────────────────────────────────────────
-function Spinner({ className = "h-5 w-5" }: { className?: string }) {
+function getRpsSummaryLabel(choice: RpsChoice | null): string {
+  if (!choice) return "No choice yet";
+  return choice.charAt(0) + choice.slice(1).toLowerCase();
+}
+
+function Spinner() {
   return (
     <svg
-      className={`animate-spin ${className}`}
+      className="h-5 w-5 animate-spin"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -46,21 +54,12 @@ function Spinner({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-// ─── Copy icon ─────────────────────────────────────────────────────────────
-function CopyIcon() {
-  return (
-    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-    </svg>
-  );
-}
-
 export default function GamePage() {
   const router = useRouter();
   const { playerId, name, isInitialized, isLoading: isSessionLoading } = useSession();
   const {
     room,
+    gameType,
     board,
     gameStatus,
     players,
@@ -69,6 +68,7 @@ export default function GamePage() {
     winReason,
     turnTimeRemaining,
     countdown,
+    rps,
     isSocketConnected,
     isOpponentConnected,
     opponentDisconnectedMessage,
@@ -77,86 +77,41 @@ export default function GamePage() {
     isLoadingRoom,
     error,
     makeMove,
+    submitRpsChoice,
     leaveRoom,
     restoreRoom,
     requestRematch,
     acceptRematch,
     declineRematch,
-    clearRematchFeedback,
-    clearError,
   } = useRoom();
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<"success" | "error" | "info" | "warning">("info");
   const [isLeaving, setIsLeaving] = useState(false);
   const [isRequestingRematch, setIsRequestingRematch] = useState(false);
-  const [codeCopied, setCodeCopied] = useState(false);
-  const [, startTransition] = useTransition();
+  const [copyCodeState, setCopyCodeState] = useState(false);
+  const [selectedRpsChoice, setSelectedRpsChoice] = useState<RpsChoice | null>(null);
 
-  // Redirect if unauthenticated
   useEffect(() => {
     if (!isSessionLoading && (!isInitialized || !name?.trim())) {
-      startTransition(() => {
-        router.replace("/session");
-      });
+      router.replace("/session");
     }
   }, [isInitialized, isSessionLoading, name, router]);
 
-  // Restore room or redirect to /home
   useEffect(() => {
     if (isInitialized && !isSessionLoading && !room) {
       (async () => {
         const restored = await restoreRoom();
         if (!restored) {
-          startTransition(() => {
-            router.replace("/home");
-          });
+          router.replace("/home");
         }
       })();
     }
   }, [isInitialized, isSessionLoading, room, restoreRoom, router]);
 
-  // If room drops back to WAITING, navigate to waiting room
   useEffect(() => {
     if (room && gameStatus === "WAITING") {
-      startTransition(() => {
-        router.replace("/waiting");
-      });
+      router.replace("/waiting");
     }
   }, [room, gameStatus, router]);
-
-  // Error → toast; no room → redirect home
-  useEffect(() => {
-    if (error) {
-      queueMicrotask(() => {
-        setToastMessage(error);
-        setToastType("error");
-      });
-      if (!room) {
-        startTransition(() => {
-          router.replace("/home");
-        });
-      }
-    }
-  }, [error, room, router]);
-
-  // Rematch feedback toast
-  useEffect(() => {
-    if (rematchFeedbackMessage) {
-      queueMicrotask(() => {
-        setToastMessage(rematchFeedbackMessage);
-        setToastType("info");
-      });
-      clearRematchFeedback();
-    }
-  }, [rematchFeedbackMessage, clearRematchFeedback]);
-
-  // Reset rematch requesting state when backend confirms
-  useEffect(() => {
-    if (rematchRequestedBy === playerId) {
-      queueMicrotask(() => setIsRequestingRematch(false));
-    }
-  }, [rematchRequestedBy, playerId]);
 
   const handleCellClick = useCallback(
     (index: number) => {
@@ -169,28 +124,29 @@ export default function GamePage() {
 
   const handleCopyCode = async () => {
     if (!room?.code) return;
+
     try {
       await navigator.clipboard.writeText(room.code);
     } catch {
-      const ta = document.createElement("textarea");
-      ta.value = room.code;
-      document.body.appendChild(ta);
-      ta.select();
+      const textarea = document.createElement("textarea");
+      textarea.value = room.code;
+      document.body.appendChild(textarea);
+      textarea.select();
       document.execCommand("copy");
-      document.body.removeChild(ta);
+      document.body.removeChild(textarea);
     }
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
+
+    setCopyCodeState(true);
+    setTimeout(() => setCopyCodeState(false), 2000);
   };
 
   const handleLeaveGame = async () => {
     setIsLeaving(true);
     const success = await leaveRoom();
     setIsLeaving(false);
+
     if (success) {
-      startTransition(() => {
-        router.replace("/home");
-      });
+      router.replace("/home");
     }
   };
 
@@ -199,11 +155,18 @@ export default function GamePage() {
     requestRematch();
   };
 
-  // Loading / no room
+  const handleAcceptRematch = () => {
+    acceptRematch();
+  };
+
+  const handleDeclineRematch = () => {
+    declineRematch();
+  };
+
   if (isSessionLoading || isLoadingRoom || !room) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-4 min-h-screen">
-        <div className="flex items-center gap-3 text-zinc-400 text-sm">
+      <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
+        <div className="flex items-center gap-3 text-sm text-zinc-400">
           <Spinner />
           <span>Loading match…</span>
         </div>
@@ -211,268 +174,242 @@ export default function GamePage() {
     );
   }
 
-  // ─── Derive UI state ─────────────────────────────────────────────────────
-  const me = players.find((p) => p.playerId === playerId) ?? null;
-  const opponent = players.find((p) => p.playerId !== playerId) ?? null;
-
+  const activeGameType: GameType = room.gameType ?? gameType ?? "TIC_TAC_TOE";
+  const me = players.find((player) => player.playerId === playerId) ?? null;
+  const opponent = players.find((player) => player.playerId !== playerId) ?? null;
   const isMyTurn = gameStatus === "PLAYING" && currentTurn === playerId;
   const isFinished = gameStatus === "FINISHED" || gameStatus === "REMATCH_PENDING";
   const isPlaying = gameStatus === "PLAYING";
+  const winningCells = isFinished && winReason !== "DRAW" ? getVisualWinningCells(board) : [];
 
-  // Visual-only winning cells — derived from authoritative board when game is done
-  const winningCells =
-    isFinished && winReason !== "DRAW" ? getVisualWinningCells(board) : [];
+  const hasRequestedRematch = rematchRequestedBy === playerId;
+  const opponentRequestedRematch = rematchRequestedBy !== null && rematchRequestedBy !== playerId;
+  const toastMessage = error ?? rematchFeedbackMessage ?? null;
+  const toastType: "success" | "error" | "info" | "warning" = error ? "error" : "info";
 
-  // Result labels
   let resultTitle = "";
   let resultSubtitle = "";
   let resultEmoji = "";
+
   if (isFinished) {
     if (winner === "DRAW" || winReason === "DRAW") {
-      resultTitle = "It's a Draw";
-      resultSubtitle = "Nobody wins this time.";
+      resultTitle = "It’s a draw";
+      resultSubtitle = "Nobody wins this round.";
       resultEmoji = "🤝";
     } else if (winner === playerId) {
-      resultTitle = "You Won";
-      resultSubtitle =
-        winReason === "ABANDONMENT"
-          ? "Opponent left the match."
-          : "Great game!";
+      resultTitle = "You won";
+      resultSubtitle = winReason === "ABANDONMENT" ? "Opponent left the match." : "Great game!";
       resultEmoji = "🏆";
-    } else {
-      resultTitle = "You Lost";
-      resultSubtitle =
-        winReason === "ABANDONMENT"
-          ? "You left the match."
-          : `${opponent?.name || "Opponent"} wins this round.`;
+    } else if (winner) {
+      resultTitle = "You lost";
+      resultSubtitle = winReason === "ABANDONMENT" ? "You left the match." : `${opponent?.name || "Opponent"} took the win.`;
       resultEmoji = "😤";
     }
   }
 
-  const hasRequestedRematch = rematchRequestedBy === playerId;
-  const opponentRequestedRematch =
-    rematchRequestedBy !== null && rematchRequestedBy !== playerId;
-
-  // PlayerCard data
-  const meCardInfo = me
-    ? {
-        name: me.name,
-        symbol: me.symbol,
-        isConnected: true,
-        isYou: true,
-        isActive: isMyTurn,
-      }
-    : null;
-
-  const opponentCardInfo = opponent
-    ? {
-        name: opponent.name,
-        symbol: opponent.symbol,
-        isConnected: isOpponentConnected,
-        isYou: false,
-        isActive: isPlaying && currentTurn === opponent.playerId,
-      }
-    : null;
+  const isRpsGame = activeGameType === "ROCK_PAPER_SCISSORS";
+  const gameHeaderText = isRpsGame ? "Rock Paper Scissors" : "Tic-Tac-Toe";
 
   return (
-    <main className="flex-1 flex flex-col p-3 sm:p-4 min-h-screen max-w-lg mx-auto w-full">
-
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between py-2 mb-3 border-b border-zinc-200/70 dark:border-zinc-800">
-        <div className="flex items-center gap-2">
-          <span className="font-black text-base tracking-tight text-zinc-900 dark:text-zinc-50">
-            Tic-Tac-Toe
-          </span>
-          {/* Room code pill */}
-          <button
-            onClick={handleCopyCode}
-            aria-label={`Copy room code ${room.code}`}
-            title="Copy room code"
-            className="group flex items-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 font-mono text-xs font-bold text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-          >
-            {codeCopied ? (
-              <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
-            ) : (
-              <>
-                <span>{room.code}</span>
-                <span className="opacity-50 group-hover:opacity-100 transition-opacity">
-                  <CopyIcon />
-                </span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Socket status */}
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-          <span
-            className={[
-              "w-2 h-2 rounded-full",
-              isSocketConnected
-                ? "bg-emerald-500"
-                : "bg-red-500 animate-pulse",
-            ].join(" ")}
-            aria-label={isSocketConnected ? "Connected" : "Connecting"}
-          />
-          <span className="hidden sm:inline text-[11px]">
-            {isSocketConnected ? "Live" : "Reconnecting…"}
-          </span>
-        </div>
-      </header>
-
-      {/* ── Disconnect Banner ───────────────────────────────────────────── */}
-      {opponentDisconnectedMessage && !isFinished && (
-        <div className="mb-3 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-sm">
-          <span className="relative flex h-2 w-2 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-          </span>
-          <span className="font-medium">{opponentDisconnectedMessage}</span>
-        </div>
-      )}
-
-      {/* ── Player Cards ────────────────────────────────────────────────── */}
-      <div className="mb-3">
-        <PlayerCard
-          me={meCardInfo}
-          opponent={opponentCardInfo}
-          gameStatus={gameStatus}
-        />
-      </div>
-
-      {/* ── Turn Indicator (during active play) ─────────────────────────── */}
-      {isPlaying && (
-        <div className="mb-2">
-          <TurnIndicator
-            isMyTurn={isMyTurn}
-            opponentName={opponent?.name || "Opponent"}
-            timeRemaining={turnTimeRemaining}
-          />
-        </div>
-      )}
-
-      {/* ── Board ───────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center flex-1 py-2">
-        <Board
-          board={board}
-          disabled={!isMyTurn || isFinished || !isOpponentConnected}
-          onCellClick={handleCellClick}
-          mySymbol={me?.symbol}
-          winningCells={winningCells}
-        />
-      </div>
-
-      {/* ── Result & Rematch Section ─────────────────────────────────────── */}
-      {isFinished && (
-        <div className="mt-3 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col items-center gap-4">
-          {/* Result */}
-          <div className="flex flex-col items-center text-center gap-1">
-            <span className="text-3xl leading-none" role="img" aria-label={resultTitle}>
-              {resultEmoji}
-            </span>
-            <h2 className="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mt-1">
-              {resultTitle}
-            </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              {resultSubtitle}
-            </p>
+    <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-2xl space-y-5">
+        <header className="flex flex-col gap-3 rounded-[1.6rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Match</p>
+            <h1 className="mt-1 text-2xl font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">{gameHeaderText}</h1>
           </div>
 
-          {/* Rematch CTA */}
-          <div className="w-full flex flex-col gap-2">
-            {opponentRequestedRematch ? (
-              // Opponent wants a rematch
-              <div className="flex flex-col gap-2.5 w-full">
-                <p className="text-sm font-semibold text-center text-emerald-700 dark:text-emerald-400">
-                  {opponent?.name || "Opponent"} wants to play again!
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    id="accept-rematch-btn"
-                    size="md"
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
-                    onClick={acceptRematch}
+          <div className="flex items-center gap-2 sm:justify-end">
+            <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+              {room.code}
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              className="rounded-full border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+            >
+              {copyCodeState ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </header>
+
+        {opponentDisconnectedMessage && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+            {opponentDisconnectedMessage}
+          </div>
+        )}
+
+        <PlayerCard me={{
+          name: me?.name || "You",
+          symbol: me?.symbol ?? null,
+          isConnected: me?.isConnected ?? true,
+          isYou: true,
+          isActive: isMyTurn,
+        }} opponent={{
+          name: opponent?.name || "Waiting…",
+          symbol: opponent?.symbol ?? null,
+          isConnected: opponent?.isConnected ?? false,
+          isYou: false,
+          isActive: !isMyTurn && isPlaying,
+        }} gameStatus={gameStatus} />
+
+        {isRpsGame ? (
+          <section className="rounded-[1.6rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Choice</p>
+                <h2 className="mt-1 text-lg font-black text-zinc-900 dark:text-zinc-50">Choose your throw</h2>
+              </div>
+              <div className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                {rps?.myChoice ? `You: ${getRpsSummaryLabel(rps.myChoice)}` : "Awaiting choice"}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {RPS_CHOICES.map(({ value, label, emoji }) => {
+                const isSelected = (selectedRpsChoice ?? rps?.myChoice) === value;
+                const disabled = Boolean(rps?.myChoice) || gameStatus !== "PLAYING";
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => {
+                      setSelectedRpsChoice(value);
+                      submitRpsChoice(value);
+                    }}
+                    className={[
+                      "rounded-2xl border p-4 text-center transition-all duration-150",
+                      isSelected
+                        ? "border-indigo-200 bg-indigo-50 shadow-sm dark:border-indigo-800 dark:bg-indigo-950/40"
+                        : "border-zinc-200 bg-zinc-50 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900",
+                    ].join(" ")}
                   >
-                    Accept
-                  </Button>
-                  <Button
-                    id="decline-rematch-btn"
-                    variant="danger"
-                    size="md"
-                    className="w-full"
-                    onClick={declineRematch}
-                  >
-                    Decline
-                  </Button>
+                    <div className="text-3xl" aria-hidden="true">{emoji}</div>
+                    <div className="mt-2 text-sm font-bold text-zinc-800 dark:text-zinc-200">{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+              {rps?.opponentChoice ? (
+                <>
+                  Opponent chose <span className="font-semibold">{getRpsSummaryLabel(rps.opponentChoice)}</span>.
+                </>
+              ) : rps?.myChoice ? (
+                "Waiting for opponent to choose…"
+              ) : (
+                "Your choice will be locked in once you submit."
+              )}
+            </div>
+          </section>
+        ) : (
+          <div className="space-y-4">
+            {!isFinished && (
+              <TurnIndicator
+                isMyTurn={isMyTurn}
+                opponentName={opponent?.name || "Opponent"}
+                timeRemaining={turnTimeRemaining}
+              />
+            )}
+
+            <div className="rounded-[1.65rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+              <Board
+                board={board}
+                disabled={gameStatus !== "PLAYING" || !isMyTurn}
+                onCellClick={handleCellClick}
+                winningCells={winningCells}
+              />
+            </div>
+          </div>
+        )}
+
+        {countdown !== null && (
+          <CountdownOverlay count={countdown} />
+        )}
+
+        {isFinished && (
+          <section className="rounded-[1.6rem] border border-zinc-200/80 bg-white/80 p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Result</p>
+                <div className="mt-2 flex items-center gap-3">
+                  <span className="text-3xl" aria-hidden="true">{resultEmoji || "🎉"}</span>
+                  <div>
+                    <h2 className="text-xl font-black tracking-[-0.04em] text-zinc-900 dark:text-zinc-50">{resultTitle || "Match complete"}</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400">{resultSubtitle || "The room is ready for rematch."}</p>
+                  </div>
                 </div>
               </div>
-            ) : hasRequestedRematch ? (
-              // We requested a rematch, waiting
-              <div className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                <Spinner className="h-4 w-4" />
-                <span>Waiting for opponent to accept…</span>
-              </div>
-            ) : (
-              // Default: offer Play Again / Exit
-              <div className="grid grid-cols-2 gap-2 w-full">
-                <Button
-                  id="play-again-btn"
-                  size="md"
-                  className="w-full"
-                  isLoading={isRequestingRematch}
-                  onClick={handlePlayAgain}
-                >
-                  Play Again
-                </Button>
-                <Button
-                  id="exit-btn"
-                  variant="outline"
-                  size="md"
-                  className="w-full"
-                  isLoading={isLeaving}
-                  onClick={handleLeaveGame}
-                >
-                  Exit
-                </Button>
+            </div>
+
+            {isRpsGame && (
+              <div className="mt-4 grid gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950 sm:grid-cols-2">
+                <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">You</p>
+                  <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                    {rps?.myChoice ? getRpsSummaryLabel(rps.myChoice) : "No choice"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Opponent</p>
+                  <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                    {rps?.opponentChoice ? getRpsSummaryLabel(rps.opponentChoice) : "Waiting"}
+                  </p>
+                </div>
               </div>
             )}
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              {opponentRequestedRematch ? (
+                <>
+                  <Button type="button" onClick={handleAcceptRematch} className="flex-1 rounded-2xl">Accept rematch</Button>
+                  <Button type="button" variant="outline" onClick={handleDeclineRematch} className="flex-1 rounded-2xl">Decline</Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    onClick={handlePlayAgain}
+                    className="flex-1 rounded-2xl"
+                    disabled={isRequestingRematch || hasRequestedRematch}
+                    isLoading={isRequestingRematch}
+                  >
+                    {hasRequestedRematch ? "Rematch requested" : "Play again"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleLeaveGame} className="flex-1 rounded-2xl" disabled={isLeaving} isLoading={isLeaving}>
+                    Leave
+                  </Button>
+                </>
+              )}
+            </div>
+          </section>
+        )}
+
+        {!isFinished && (
+          <div className="flex justify-center">
+            <Button type="button" variant="outline" onClick={handleLeaveGame} className="rounded-2xl" disabled={isLeaving} isLoading={isLeaving}>
+              Leave match
+            </Button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Footer (active match) ────────────────────────────────────────── */}
-      {!isFinished && (
-        <footer className="mt-3 flex items-center justify-between pb-1">
-          <Button
-            id="leave-match-btn"
-            variant="ghost"
-            size="sm"
-            className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 px-2"
-            isLoading={isLeaving}
-            onClick={handleLeaveGame}
-          >
-            Leave Match
-          </Button>
-          <span className="text-xs text-zinc-400 dark:text-zinc-500 truncate max-w-[160px]">
-            Playing as {me?.name}
-          </span>
-        </footer>
-      )}
+        {!isSocketConnected && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+            Reconnecting to the live room…
+          </div>
+        )}
 
-      {/* ── Countdown Overlay ───────────────────────────────────────────── */}
-      {countdown !== null && countdown >= 0 && (
-        <CountdownOverlay count={countdown} />
-      )}
+        {isSocketConnected && !isOpponentConnected && !opponentDisconnectedMessage && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+            Opponent is offline.
+          </div>
+        )}
+      </div>
 
-      {/* ── Toast ───────────────────────────────────────────────────────── */}
-      <Toast
-        message={toastMessage}
-        type={toastType}
-        onClose={() => {
-          setToastMessage(null);
-          clearError();
-        }}
-      />
+      <Toast message={toastMessage} type={toastType} />
     </main>
   );
 }

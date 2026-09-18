@@ -18,15 +18,21 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "Play Tic-Tac-Toe Online",
-    template: "%s | Tic-Tac-Toe",
+    default: "Real-Time Multiplayer Games",
+    template: "%s | Real-Time Multiplayer Games",
   },
   description:
-    "Play real-time 1-vs-1 Tic-Tac-Toe online. Create a room, invite a friend, and play instantly.",
-  applicationName: "Tic-Tac-Toe",
-  keywords: ["tic-tac-toe", "online game", "multiplayer game", "browser game"],
-  authors: [{ name: "Tic-Tac-Toe" }],
-  creator: "Tic-Tac-Toe",
+    "Play real-time 1-vs-1 multiplayer games online. Choose Tic-Tac-Toe or Rock Paper Scissors and invite a friend.",
+  applicationName: "Real-Time Multiplayer Games",
+  keywords: [
+    "multiplayer games",
+    "tic-tac-toe",
+    "rock paper scissors",
+    "online game",
+    "browser game",
+  ],
+  authors: [{ name: "Real-Time Multiplayer Games" }],
+  creator: "Real-Time Multiplayer Games",
   robots: {
     index: true,
     follow: true,
@@ -43,17 +49,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "Tic-Tac-Toe",
-    title: "Play Tic-Tac-Toe Online",
+    siteName: "Real-Time Multiplayer Games",
+    title: "Real-Time Multiplayer Games",
     description:
-      "Play real-time 1-vs-1 Tic-Tac-Toe online with a friend in your browser.",
+      "Play Tic-Tac-Toe or Rock Paper Scissors with a friend in real time.",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "Play Tic-Tac-Toe Online",
+    title: "Real-Time Multiplayer Games",
     description:
-      "Play real-time 1-vs-1 Tic-Tac-Toe online with a friend in your browser.",
+      "Play Tic-Tac-Toe or Rock Paper Scissors with a friend in real time.",
   },
   manifest: "/manifest.webmanifest",
 };

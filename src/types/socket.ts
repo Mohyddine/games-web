@@ -1,10 +1,11 @@
-import type { Room, GameStatus, BoardState, WinReason, ClientPlayerInfo } from "./game";
+import type { GameType, RpsChoice, Room, BoardState, GameStatus, ClientPlayerInfo, WinReason } from "./game";
 
 // Client-to-Server Events
 export interface ClientToServerEvents {
   "room:join": (payload: { code: string }) => void;
   "room:leave": () => void;
   "game:move": (payload: { cellIndex: number }) => void;
+  "game:rps:submit": (payload: { choice: RpsChoice }) => void;
   "rematch:request": () => void;
   "rematch:accept": () => void;
   "rematch:decline": () => void;
@@ -18,6 +19,7 @@ export interface ServerToClientEvents {
   "game:countdown": (payload: { count: number }) => void;
   "game:state": (payload: {
     code: string;
+    gameType: GameType;
     gameStatus: GameStatus;
     board: BoardState;
     players: ClientPlayerInfo[];
@@ -30,6 +32,11 @@ export interface ServerToClientEvents {
     rematch: {
       requestedBy: string;
       expiresAt: number;
+    } | null;
+    rps?: {
+      myChoice: RpsChoice | null;
+      opponentChoice: RpsChoice | null;
+      opponentHasChosen: boolean;
     } | null;
   }) => void;
   "game:finished": (payload: {

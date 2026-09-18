@@ -1,4 +1,6 @@
 export type PlayerSymbol = "X" | "O";
+export type GameType = "TIC_TAC_TOE" | "ROCK_PAPER_SCISSORS";
+export type RpsChoice = "ROCK" | "PAPER" | "SCISSORS";
 
 export type CellValue = PlayerSymbol | null;
 
@@ -43,8 +45,15 @@ export interface RematchState {
   expiresAt: number;
 }
 
+export interface RpsState {
+  myChoice: RpsChoice | null;
+  opponentChoice: RpsChoice | null;
+  opponentHasChosen: boolean;
+}
+
 export interface Room {
   code: string;
+  gameType: GameType;
   players: Player[];
   gameStatus: GameStatus;
   createdAt: number;
@@ -67,6 +76,7 @@ export interface ClientPlayerInfo {
 
 export interface ClientGameState {
   code: string;
+  gameType: GameType;
   gameStatus: GameStatus;
   board: BoardState;
   players: ClientPlayerInfo[];
@@ -77,4 +87,5 @@ export interface ClientGameState {
     allConnected: boolean;
   };
   rematch: RematchState | null;
+  rps: RpsState | null;
 }

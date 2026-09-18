@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Tic-Tac-Toe - Real-Time Multiplayer",
-    short_name: "Tic-Tac-Toe",
-    description: "Play real-time 1-vs-1 Tic-Tac-Toe with a friend.",
+    name: "Real-Time Multiplayer Games",
+    short_name: "Multiplayer Games",
+    description: "Play real-time 1-vs-1 Tic-Tac-Toe or Rock Paper Scissors with a friend.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

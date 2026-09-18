@@ -8,7 +8,17 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import type { Room, BoardState, GameStatus, WinReason, ClientPlayerInfo, RematchState } from "@/types/game";
+import type {
+  Room,
+  BoardState,
+  GameStatus,
+  WinReason,
+  ClientPlayerInfo,
+  RematchState,
+  GameType,
+  RpsChoice,
+  RpsState,
+} from "@/types/game";
 import { api, ApiClientError } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { useSession } from "./SessionContext";
@@ -16,6 +26,7 @@ import { useSession } from "./SessionContext";
 interface RoomContextValue {
   // Authoritative State
   room: Room | null;
+  gameType: GameType | null;
   board: BoardState;
   gameStatus: GameStatus | null;
   players: ClientPlayerInfo[];
@@ -25,6 +36,7 @@ interface RoomContextValue {
   turnTimeRemaining: number;
   countdown: number | null;
   rematch: RematchState | null;
+  rps: RpsState | null;
   isSocketConnected: boolean;
   isOpponentConnected: boolean;
   opponentDisconnectedMessage: string | null;
@@ -39,11 +51,12 @@ interface RoomContextValue {
   error: string | null;
 
   // Actions
-  createRoom: () => Promise<string | null>;
+  createRoom: (gameType: GameType) => Promise<string | null>;
   joinRoom: (code: string) => Promise<Room | null>;
   leaveRoom: () => Promise<boolean>;
   restoreRoom: () => Promise<Room | null>;
   makeMove: (cellIndex: number) => void;
+  submitRpsChoice: (choice: RpsChoice) => void;
   requestRematch: () => void;
   acceptRematch: () => void;
   declineRematch: () => void;
@@ -63,10 +76,17 @@ const RoomContext = createContext<RoomContextValue | undefined>(undefined);
 export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { playerId, isInitialized, isLoading: isSessionLoading } = useSession();
+  const {
+    playerId,
+    name,
+    isInitialized,
+    isLoading: isSessionLoading,
+    initSession,
+  } = useSession();
 
   // Authoritative State
   const [room, setRoom] = useState<Room | null>(null);
+  const [gameType, setGameType] = useState<GameType | null>(null);
   const [board, setBoard] = useState<BoardState>(DEFAULT_BOARD);
   const [gameStatus, setGameStatus] = useState<GameStatus | null>(null);
   const [players, setPlayers] = useState<ClientPlayerInfo[]>([]);
@@ -76,6 +96,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
   const [turnTimeRemaining, setTurnTimeRemaining] = useState<number>(30);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [rematch, setRematch] = useState<RematchState | null>(null);
+  const [rps, setRps] = useState<RpsState | null>(null);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
   const [isOpponentConnected, setIsOpponentConnected] = useState<boolean>(true);
   const [opponentDisconnectedMessage, setOpponentDisconnectedMessage] = useState<string | null>(null);
@@ -107,6 +128,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
   // Sync state helper from a Room object
   const syncFromRoom = useCallback((r: Room | null) => {
     setRoom(r);
+    setGameType(r?.gameType ?? null);
     if (r) {
       setBoard(r.board || DEFAULT_BOARD);
       setGameStatus(r.gameStatus);
@@ -115,6 +137,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
       setCurrentTurn(r.currentTurn);
       setTurnTimeRemaining(r.turnTimeRemaining ?? 30);
       setRematch(r.rematch || null);
+      setRps((prev) => (r.gameType === "ROCK_PAPER_SCISSORS" ? prev ?? { myChoice: null, opponentChoice: null, opponentHasChosen: false } : null));
 
       if (r.rematch) {
         setRematchRequestedBy(r.rematch.requestedBy);
@@ -153,6 +176,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
       setTurnTimeRemaining(30);
       setCountdown(null);
       setRematch(null);
+      setRps(null);
       setRematchRequestedBy(null);
       setRematchExpiresInMs(null);
       setIsOpponentConnected(true);
@@ -181,17 +205,35 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [syncFromRoom]);
 
   // Create room flow: POST /api/v1/rooms then sync
-  const createRoom = useCallback(async (): Promise<string | null> => {
+  const createRoom = useCallback(async (selectedGameType: GameType): Promise<string | null> => {
     setIsLoadingRoom(true);
     setError(null);
     try {
-      const createData = await api.createRoom();
+      let createData;
+      try {
+        createData = await api.createRoom(selectedGameType);
+      } catch (err) {
+        if (
+          err instanceof ApiClientError &&
+          err.errorCode === "UNAUTHORIZED" &&
+          name?.trim()
+        ) {
+          const sessionRestored = await initSession(name);
+          if (!sessionRestored) {
+            throw err;
+          }
+          createData = await api.createRoom(selectedGameType);
+        } else {
+          throw err;
+        }
+      }
       const roomDetails = await api.getCurrentRoom();
       if (roomDetails) {
         syncFromRoom(roomDetails);
       } else {
         syncFromRoom({
           code: createData.code,
+          gameType: createData.gameType,
           players: [],
           gameStatus: createData.gameStatus,
           createdAt: Date.now(),
@@ -213,7 +255,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setIsLoadingRoom(false);
     }
-  }, [syncFromRoom]);
+  }, [initSession, name, syncFromRoom]);
 
   // Join room flow: POST /api/v1/rooms/:code/join
   const joinRoom = useCallback(async (code: string): Promise<Room | null> => {
@@ -261,6 +303,18 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
     const socket = getSocket();
     if (socket.connected) {
       socket.emit("game:move", { cellIndex });
+    }
+  }, []);
+
+  const submitRpsChoice = useCallback((choice: RpsChoice) => {
+    const socket = getSocket();
+    if (socket.connected) {
+      socket.emit("game:rps:submit", { choice });
+      setRps((prev) => ({
+        myChoice: choice,
+        opponentChoice: prev?.opponentChoice ?? null,
+        opponentHasChosen: prev?.opponentHasChosen ?? false,
+      }));
     }
   }, []);
 
@@ -372,6 +426,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const onGameState = (payload: {
       code: string;
+      gameType: GameType;
       gameStatus: GameStatus;
       board: BoardState;
       players: ClientPlayerInfo[];
@@ -380,14 +435,17 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
       turnTimeRemaining: number;
       connectionState: { allConnected: boolean };
       rematch: { requestedBy: string; expiresAt: number } | null;
+      rps?: { myChoice: RpsChoice | null; opponentChoice: RpsChoice | null; opponentHasChosen: boolean } | null;
     }) => {
       setCountdown(null);
+      setGameType(payload.gameType);
       setBoard(payload.board);
       setGameStatus(payload.gameStatus);
       setPlayers(payload.players);
       setCurrentTurn(payload.currentTurn);
       setWinner(payload.winner);
       setTurnTimeRemaining(payload.turnTimeRemaining);
+      setRps(payload.rps ?? null);
 
       if (payload.rematch) {
         setRematch({
@@ -418,6 +476,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!prev) return null;
         return {
           ...prev,
+          gameType: payload.gameType,
           board: payload.board,
           gameStatus: payload.gameStatus,
           currentTurn: payload.currentTurn,
@@ -576,6 +635,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
     <RoomContext.Provider
       value={{
         room,
+        gameType,
         board,
         gameStatus,
         players,
@@ -585,6 +645,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
         turnTimeRemaining,
         countdown,
         rematch,
+        rps,
         isSocketConnected,
         isOpponentConnected,
         opponentDisconnectedMessage,
@@ -598,6 +659,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
         leaveRoom,
         restoreRoom,
         makeMove,
+        submitRpsChoice,
         requestRematch: requestRematchAction,
         acceptRematch: acceptRematchAction,
         declineRematch: declineRematchAction,

@@ -61,27 +61,25 @@ export default function SessionPage() {
 
   return (
     <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
-      <div
-        className={[
-          "w-full max-w-[32rem] flex flex-col items-center",
-          "animate-fade-in-up",
-        ].join(" ")}
-      >
-        <div className="mb-7 flex items-center gap-1.5">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-900/20">
-            <span className="text-xl font-black leading-none text-white">X</span>
+      <div className="w-full max-w-[32rem] flex flex-col items-center animate-fade-in-up">
+        <div className="mb-7 flex items-center justify-center gap-2.5">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-900/20">
+            <span className="text-xl font-black leading-none text-white">🎮</span>
           </div>
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-zinc-800 shadow-sm">
-            <span className="text-xl font-black leading-none text-amber-400">O</span>
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800 shadow-sm">
+            <span className="text-xl font-black leading-none text-amber-400">⚡</span>
           </div>
         </div>
 
         <div className="mb-8 text-center">
-          <h1 className="text-[4rem] font-black leading-none tracking-[-0.06em] text-zinc-900 dark:text-zinc-50">
-            Tic-Tac-Toe
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
+            Multiplayer Arena
+          </p>
+          <h1 className="mt-3 text-[2.75rem] font-black leading-none tracking-[-0.06em] text-zinc-900 dark:text-zinc-50 sm:text-[3.5rem]">
+            Real-Time Multiplayer Games
           </h1>
-          <p className="mt-3 text-[1.05rem] text-zinc-600 dark:text-zinc-400">
-            Play with anyone, anywhere.
+          <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
+            Create a room, invite a friend, and play your next match in seconds.
           </p>
         </div>
 
@@ -89,7 +87,7 @@ export default function SessionPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
               id="player-name-input"
-              label="Choose your username"
+              label="Choose your player name"
               type="text"
               value={name}
               placeholder="Enter your username"
@@ -116,7 +114,7 @@ export default function SessionPage() {
               type="submit"
               size="lg"
               disabled={!name.trim() || isSubmitting || isSessionLoading}
-              className="h-[4.2rem] w-full rounded-[1.2rem] bg-indigo-600 text-[2rem] font-black tracking-[-0.05em] shadow-lg shadow-indigo-900/20 hover:bg-indigo-500"
+              className="h-[4.2rem] w-full rounded-[1.2rem] bg-indigo-600 text-[1.8rem] font-black tracking-[-0.05em] shadow-lg shadow-indigo-900/20 hover:bg-indigo-500"
               isLoading={isSubmitting || (isSessionLoading && isInitialized)}
             >
               Continue
@@ -125,7 +123,7 @@ export default function SessionPage() {
         </div>
 
         <p className="mt-6 text-[0.95rem] leading-relaxed text-zinc-500 dark:text-zinc-400">
-          Your session is stored in an HTTP-only cookie.
+          Your player session is stored in an HTTP-only cookie.
           <br />
           No account required.
         </p>
