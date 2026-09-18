@@ -16,9 +16,7 @@ export default function SessionPage() {
   } = useSession();
 
   const [name, setName] = useState("mohyddine");
-  const [localError, setLocalError] = useState<string | null>(
-    "Unable to connect to the game server. Please check your connection."
-  );
+  const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [, startTransition] = useTransition();
