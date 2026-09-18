@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Real-Time Multiplayer Games",
   },
   description:
-    "Play real-time 1-vs-1 multiplayer games online. Choose Tic-Tac-Toe or Rock Paper Scissors and invite a friend.",
+    "Challenge a friend to fast, real-time 1-vs-1 browser games. Choose Tic-Tac-Toe or Rock Paper Scissors, create a room, and play instantly.",
   applicationName: "Real-Time Multiplayer Games",
   keywords: [
     "multiplayer games",
@@ -33,6 +33,16 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Real-Time Multiplayer Games" }],
   creator: "Real-Time Multiplayer Games",
+  category: "games",
+  referrer: "origin-when-cross-origin",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.svg", type: "image/svg+xml", sizes: "192x192" },
+      { url: "/icon-512.svg", type: "image/svg+xml", sizes: "512x512" },
+    ],
+    apple: { url: "/icon-192.svg", type: "image/svg+xml", sizes: "192x192" },
+  },
   robots: {
     index: true,
     follow: true,
@@ -52,14 +62,14 @@ export const metadata: Metadata = {
     siteName: "Real-Time Multiplayer Games",
     title: "Real-Time Multiplayer Games",
     description:
-      "Play Tic-Tac-Toe or Rock Paper Scissors with a friend in real time.",
+      "Challenge a friend to Tic-Tac-Toe or Rock Paper Scissors in a fast, real-time browser match.",
     url: "/",
   },
   twitter: {
     card: "summary",
     title: "Real-Time Multiplayer Games",
     description:
-      "Play Tic-Tac-Toe or Rock Paper Scissors with a friend in real time.",
+      "Challenge a friend to Tic-Tac-Toe or Rock Paper Scissors in a fast, real-time browser match.",
   },
   manifest: "/manifest.webmanifest",
 };

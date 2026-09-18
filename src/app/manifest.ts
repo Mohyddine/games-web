@@ -3,20 +3,20 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Real-Time Multiplayer Games",
-    short_name: "Multiplayer Games",
-    description: "Play real-time 1-vs-1 Tic-Tac-Toe or Rock Paper Scissors with a friend.",
+    short_name: "Game Arena",
+    description: "Challenge a friend to real-time Tic-Tac-Toe or Rock Paper Scissors matches.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
     background_color: "#09090b",
-    theme_color: "#09090b",
+    theme_color: "#4f46e5",
     categories: ["games", "entertainment"],
     icons: [
       {
         src: "/icon-192.svg",
         sizes: "192x192",
         type: "image/svg+xml",
-        purpose: "any",
+        purpose: "maskable",
       },
       {
         src: "/icon-512.svg",

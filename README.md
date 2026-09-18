@@ -1,7 +1,9 @@
-# Tic-Tac-Toe Frontend
+# Real-Time Multiplayer Games
 
-This project is the browser client for a live two-player Tic-Tac-Toe game built
-with Next.js, React, and Socket.IO. The frontend is responsible for the user
+This project is the browser client for a real-time two-player game arena built
+with Next.js, React, and Socket.IO. Players can choose Tic-Tac-Toe or Rock Paper
+Scissors, create or join a private room, and play with a friend in the browser.
+The frontend is responsible for the user
 experience: session setup, room flow, match UI, player display, validation,
 notifications, and reconnect behavior. The backend remains the source of truth
 for the actual game state, session data, name validation, room rules, and any
@@ -13,12 +15,15 @@ multiplayer loop:
 - the player must choose a valid username before entering the app
 - the player can create a game room or join a room with a code
 - the waiting room shows connected players and room details
-- the game starts with a countdown and the board becomes active
+- the selected game starts with a synchronized countdown
+- Tic-Tac-Toe turns and Rock Paper Scissors choices are submitted to the backend
 - turns are timed and tracked by the backend
 - the result is shown immediately after the match ends
 - rematches, leaving a room, and reconnection are all handled in the live flow
 
-## How to play
+## Available games
+
+### Tic-Tac-Toe
 
 Tic-Tac-Toe is played on a 3x3 board. Players alternate turns, placing either
 an X or an O in one empty square. A player wins by placing three matching marks
@@ -33,7 +38,13 @@ The frontend makes this feel intuitive:
 - the result screen explains whether the player won, lost, or drew
 - the app shows the current room code and waiting state before the match begins
 
-## Game rules and backend authority
+### Rock Paper Scissors
+
+Both players secretly submit Rock, Paper, or Scissors. Choices remain hidden
+until both submissions are received, then the backend coordinates the reveal,
+result, and synchronized round timing.
+
+## Backend authority
 
 The backend defines the actual game logic and authoritative state. The frontend
 only reflects that state in a user-friendly way. The backend handles:
@@ -255,7 +266,8 @@ backend behavior, REST contract shape, or Socket.IO event layouts.
 
 ## Summary
 
-This frontend is a complete browser client for a real-time Tic-Tac-Toe game.
+This frontend is a complete browser client for a real-time multiplayer game
+arena supporting Tic-Tac-Toe and Rock Paper Scissors.
 It enforces the required username experience, keeps the session flow secure and
 clear, provides room creation/joining, tracks live game state, and reflects the
 backend-authoritative results and names throughout the entire user journey.
