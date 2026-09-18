@@ -26,7 +26,7 @@ function Spinner() {
 
 export default function HomePage() {
   const router = useRouter();
-  const { playerId, name, isInitialized, isLoading: isSessionLoading } = useSession();
+  const { name, isInitialized, isLoading: isSessionLoading } = useSession();
   const {
     room,
     isLoadingRoom,
@@ -277,13 +277,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Player ID footer */}
-        <div className="flex items-center justify-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-600">
-          <span>Signed in as</span>
-          <code className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-500">
-            {playerId}
-          </code>
-        </div>
       </div>
     </main>
   );

@@ -240,10 +240,6 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoadingRoom(true);
     setError(null);
     try {
-      const socket = getSocket();
-      if (socket.connected) {
-        socket.emit("room:leave");
-      }
       await api.leaveCurrentRoom();
       syncFromRoom(null);
       return true;
