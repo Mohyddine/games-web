@@ -2,6 +2,7 @@
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
 :root {
+  color-scheme: light;
   --background: #f9f9fb;
   --foreground: #0f0f11;
   --surface: #ffffff;
@@ -16,6 +17,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --background: #09090b;
     --foreground: #fafafa;
     --surface: #18181b;

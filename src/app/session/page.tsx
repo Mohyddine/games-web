@@ -77,15 +77,15 @@ export default function SessionPage() {
         </div>
 
         <div className="mb-8 text-center">
-          <h1 className="text-[4rem] font-black leading-none tracking-[-0.06em] text-zinc-900">
+          <h1 className="text-[4rem] font-black leading-none tracking-[-0.06em] text-zinc-900 dark:text-zinc-50">
             Tic-Tac-Toe
           </h1>
-          <p className="mt-3 text-[1.05rem] text-zinc-600">
+          <p className="mt-3 text-[1.05rem] text-zinc-600 dark:text-zinc-400">
             Play with anyone, anywhere.
           </p>
         </div>
 
-        <div className="w-full rounded-[1.7rem] border border-zinc-200/80 bg-[#f3f3f3] p-6 shadow-sm">
+        <div className="w-full rounded-[1.7rem] border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/80 p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
               id="player-name-input"
@@ -104,10 +104,10 @@ export default function SessionPage() {
               error={activeError}
               aria-invalid={Boolean(activeError)}
               aria-describedby="player-name-hint"
-              className="!h-[4.15rem] !rounded-2xl !border-[3px] !px-5 !text-[2.25rem] !font-medium !leading-none !tracking-[-0.04em] !bg-[#f9f9f7]"
+              className="!h-[4.15rem] !rounded-2xl !border-[3px] !px-5 !text-[2.25rem] !font-medium !leading-none !tracking-[-0.04em] !bg-white dark:!bg-zinc-950"
               style={{ boxShadow: "none" }}
             />
-            <p id="player-name-hint" className="-mt-1 text-xs text-zinc-500">
+            <p id="player-name-hint" className="-mt-1 text-xs text-zinc-500 dark:text-zinc-400">
               Use 2–20 letters, numbers, or spaces.
             </p>
 
@@ -124,7 +124,7 @@ export default function SessionPage() {
           </form>
         </div>
 
-        <p className="mt-6 text-[0.95rem] leading-relaxed text-zinc-500">
+        <p className="mt-6 text-[0.95rem] leading-relaxed text-zinc-500 dark:text-zinc-400">
           Your session is stored in an HTTP-only cookie.
           <br />
           No account required.
