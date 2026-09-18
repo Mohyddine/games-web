@@ -15,7 +15,7 @@ export default function SessionPage() {
     error: contextError,
   } = useSession();
 
-  const [name, setName] = useState("mohyddine");
+  const [name, setName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);

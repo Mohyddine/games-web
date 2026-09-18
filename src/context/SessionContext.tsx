@@ -9,6 +9,8 @@ import React, {
 } from "react";
 import { api, ApiClientError } from "@/lib/api";
 
+const SESSION_MARKER_KEY = "tic-tac-toe-session-created";
+
 interface SessionContextValue {
   playerId: string | null;
   name: string | null;
@@ -38,6 +40,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       setPlayerId(data.playerId);
       setName(data.name);
       setIsInitialized(true);
+      window.localStorage.setItem(SESSION_MARKER_KEY, "true");
       return true;
     } catch (err) {
       if (err instanceof ApiClientError) {
@@ -56,11 +59,27 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     setName(null);
     setIsInitialized(false);
     setError(null);
+    window.localStorage.removeItem(SESSION_MARKER_KEY);
   }, []);
 
-  // Restore session automatically on initial mount using the HTTP-only cookie
+  // Only restore sessions that this browser has explicitly created through the form.
+  // The session endpoint creates a new session when called without a cookie, so calling
+  // it for every first visit would skip the name form.
   useEffect(() => {
     let isMounted = true;
+
+    if (window.localStorage.getItem(SESSION_MARKER_KEY) !== "true") {
+      const loadingTimer = window.setTimeout(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }, 0);
+      return () => {
+        isMounted = false;
+        window.clearTimeout(loadingTimer);
+      };
+    }
+
     (async () => {
       try {
         const data = await api.createOrRestoreSession();
