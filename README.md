@@ -225,6 +225,21 @@ The app expects these public variables:
 If these values are not present, the frontend falls back to the hosted backend
 origin used by the project.
 
+## PWA and SEO
+
+The app exposes the standard PWA and search-engine endpoints:
+
+- `/manifest.webmanifest` describes the installable app and its icons.
+- `/robots.txt` allows public discovery while excluding room and game screens.
+- `/sitemap.xml` lists the public entry routes.
+- `/sw.js` provides a small network-first service worker for previously visited
+  documents.
+
+Set `NEXT_PUBLIC_SITE_URL` to the production origin (for example,
+`https://play.example.com`) so canonical URLs, Open Graph URLs, robots, and the
+sitemap use the deployed domain. It defaults to `http://localhost:3000` for
+local development.
+
 ## Development and validation
 
 Run the frontend checks locally:
