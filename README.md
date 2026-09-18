@@ -18,13 +18,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Environment variables
 
-Copy `.env.example` to `.env.local` and set the public API and Socket.IO backend URL before starting the app.
+Copy `.env.example` to `.env.local` to override the public API and Socket.IO backend URL.
 
 ```bash
 cp .env.example .env.local
 ```
 
-The `NEXT_PUBLIC_*` values are read at build time, so configure them in the environment used for `next build`.
+The `NEXT_PUBLIC_*` values are read at build time, so configure them in the environment used for
+`next build` when deploying a different backend. If they are omitted, the app uses the production
+backend at `https://games-api.codewithmehyo.com`.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

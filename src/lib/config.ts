@@ -1,12 +1,9 @@
-const requiredPublicUrl = (name: "NEXT_PUBLIC_API_URL" | "NEXT_PUBLIC_SOCKET_URL") => {
-  const value = process.env[name]?.trim().replace(/\/+$/, "");
+const DEFAULT_BACKEND_URL = "https://games-api.codewithmehyo.com";
 
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
+const publicUrl = (
+  name: "NEXT_PUBLIC_API_URL" | "NEXT_PUBLIC_SOCKET_URL",
+  fallback: string
+) => process.env[name]?.trim().replace(/\/+$/, "") || fallback;
 
-  return value;
-};
-
-export const API_BASE_URL = requiredPublicUrl("NEXT_PUBLIC_API_URL");
-export const SOCKET_URL = requiredPublicUrl("NEXT_PUBLIC_SOCKET_URL");
+export const API_BASE_URL = publicUrl("NEXT_PUBLIC_API_URL", DEFAULT_BACKEND_URL);
+export const SOCKET_URL = publicUrl("NEXT_PUBLIC_SOCKET_URL", DEFAULT_BACKEND_URL);
