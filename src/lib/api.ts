@@ -6,9 +6,7 @@ import type {
   LeaveRoomData,
 } from "@/types/api";
 import type { Room } from "@/types/game";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") || "http://localhost:3000";
+import { API_BASE_URL } from "@/lib/config";
 
 export class ApiClientError extends Error {
   public readonly statusCode: number;

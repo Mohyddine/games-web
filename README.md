@@ -16,6 +16,16 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### Environment variables
+
+Copy `.env.example` to `.env.local` and set the public API and Socket.IO backend URL before starting the app.
+
+```bash
+cp .env.example .env.local
+```
+
+The `NEXT_PUBLIC_*` values are read at build time, so configure them in the environment used for `next build`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

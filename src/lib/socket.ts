@@ -1,8 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import type { ClientToServerEvents, ServerToClientEvents } from "@/types/socket";
-
-const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL?.replace(/\/+$/, "") || "http://localhost:3000";
+import { SOCKET_URL } from "@/lib/config";
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
