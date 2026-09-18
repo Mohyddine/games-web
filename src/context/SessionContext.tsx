@@ -17,7 +17,7 @@ interface SessionContextValue {
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
-  initSession: (name?: string) => Promise<boolean>;
+  initSession: (name: string) => Promise<boolean>;
   clearSession: () => void;
 }
 
@@ -32,11 +32,17 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const initSession = useCallback(async (customName?: string): Promise<boolean> => {
+  const initSession = useCallback(async (customName: string): Promise<boolean> => {
+    const trimmedName = customName.trim();
+    if (!trimmedName) {
+      setError("Please enter a username before continuing.");
+      return false;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.createOrRestoreSession(customName);
+      const data = await api.createOrRestoreSession(trimmedName);
       setPlayerId(data.playerId);
       setName(data.name);
       setIsInitialized(true);
@@ -44,7 +50,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       return true;
     } catch (err) {
       if (err instanceof ApiClientError) {
-        setError(err.message);
+        setError(
+          err.errorCode === "INVALID_NAME"
+            ? "Please enter a valid username using 2–20 letters, numbers, or spaces."
+            : err.message
+        );
       } else {
         setError("An unexpected error occurred while setting up your session.");
       }
@@ -83,10 +93,12 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     (async () => {
       try {
         const data = await api.createOrRestoreSession();
-        if (isMounted) {
+        if (isMounted && data.name.trim()) {
           setPlayerId(data.playerId);
           setName(data.name);
           setIsInitialized(true);
+        } else if (isMounted) {
+          window.localStorage.removeItem(SESSION_MARKER_KEY);
         }
       } catch {
         // If restoring session fails on first load (e.g. no cookie exists yet),

@@ -58,7 +58,7 @@ function CopyIcon() {
 
 export default function GamePage() {
   const router = useRouter();
-  const { playerId, isInitialized, isLoading: isSessionLoading } = useSession();
+  const { playerId, name, isInitialized, isLoading: isSessionLoading } = useSession();
   const {
     room,
     board,
@@ -95,12 +95,12 @@ export default function GamePage() {
 
   // Redirect if unauthenticated
   useEffect(() => {
-    if (!isSessionLoading && !isInitialized) {
+    if (!isSessionLoading && (!isInitialized || !name?.trim())) {
       startTransition(() => {
         router.replace("/session");
       });
     }
-  }, [isInitialized, isSessionLoading, router]);
+  }, [isInitialized, isSessionLoading, name, router]);
 
   // Restore room or redirect to /home
   useEffect(() => {
@@ -128,8 +128,10 @@ export default function GamePage() {
   // Error → toast; no room → redirect home
   useEffect(() => {
     if (error) {
-      setToastMessage(error);
-      setToastType("error");
+      queueMicrotask(() => {
+        setToastMessage(error);
+        setToastType("error");
+      });
       if (!room) {
         startTransition(() => {
           router.replace("/home");
@@ -141,8 +143,10 @@ export default function GamePage() {
   // Rematch feedback toast
   useEffect(() => {
     if (rematchFeedbackMessage) {
-      setToastMessage(rematchFeedbackMessage);
-      setToastType("info");
+      queueMicrotask(() => {
+        setToastMessage(rematchFeedbackMessage);
+        setToastType("info");
+      });
       clearRematchFeedback();
     }
   }, [rematchFeedbackMessage, clearRematchFeedback]);
@@ -150,7 +154,7 @@ export default function GamePage() {
   // Reset rematch requesting state when backend confirms
   useEffect(() => {
     if (rematchRequestedBy === playerId) {
-      setIsRequestingRematch(false);
+      queueMicrotask(() => setIsRequestingRematch(false));
     }
   }, [rematchRequestedBy, playerId]);
 

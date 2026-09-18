@@ -33,12 +33,12 @@ export default function WaitingPage() {
 
   // Redirect if unauthenticated
   useEffect(() => {
-    if (!isSessionLoading && !isInitialized) {
+    if (!isSessionLoading && (!isInitialized || !name?.trim())) {
       startTransition(() => {
         router.replace("/session");
       });
     }
-  }, [isInitialized, isSessionLoading, router]);
+  }, [isInitialized, isSessionLoading, name, router]);
 
   // Automatically navigate to /game when countdown/match starts
   useEffect(() => {

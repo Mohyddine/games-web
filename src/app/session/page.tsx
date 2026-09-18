@@ -18,12 +18,7 @@ export default function SessionPage() {
   const [name, setName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (isInitialized && !isSessionLoading) {
@@ -38,19 +33,21 @@ export default function SessionPage() {
     setLocalError(null);
 
     const trimmed = name.trim();
-    if (trimmed.length > 0) {
-      if (trimmed.length < 2 || trimmed.length > 20) {
-        setLocalError("Name must be between 2 and 20 characters.");
-        return;
-      }
-      if (!/^[a-zA-Z0-9 ]+$/.test(trimmed)) {
-        setLocalError("Name must contain only letters, numbers, and spaces.");
-        return;
-      }
+    if (!trimmed) {
+      setLocalError("Please enter a username.");
+      return;
+    }
+    if (trimmed.length < 2 || trimmed.length > 20) {
+      setLocalError("Username must be between 2 and 20 characters.");
+      return;
+    }
+    if (!/^[a-zA-Z0-9 ]+$/.test(trimmed)) {
+      setLocalError("Username must contain only letters, numbers, and spaces.");
+      return;
     }
 
     setIsSubmitting(true);
-    const success = await initSession(trimmed.length > 0 ? trimmed : undefined);
+    const success = await initSession(trimmed);
     setIsSubmitting(false);
 
     if (success) {
@@ -67,7 +64,7 @@ export default function SessionPage() {
       <div
         className={[
           "w-full max-w-[32rem] flex flex-col items-center",
-          mounted ? "animate-fade-in-up" : "opacity-0",
+          "animate-fade-in-up",
         ].join(" ")}
       >
         <div className="mb-7 flex items-center gap-1.5">
@@ -92,23 +89,33 @@ export default function SessionPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
               id="player-name-input"
-              label="Your name"
+              label="Choose your username"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your username"
+              onChange={(e) => {
+                setName(e.target.value);
+                if (localError) setLocalError(null);
+              }}
               maxLength={20}
               autoComplete="off"
               autoFocus
               disabled={isSubmitting || isSessionLoading}
               error={activeError}
-              className="!h-[4.15rem] !rounded-2xl !border-[3px] !px-5 !text-[2.25rem] !font-medium !leading-none !tracking-[-0.04em] !text-red-500 !bg-[#f9f9f7] !placeholder:text-red-200"
+              aria-invalid={Boolean(activeError)}
+              aria-describedby="player-name-hint"
+              className="!h-[4.15rem] !rounded-2xl !border-[3px] !px-5 !text-[2.25rem] !font-medium !leading-none !tracking-[-0.04em] !bg-[#f9f9f7]"
               style={{ boxShadow: "none" }}
             />
+            <p id="player-name-hint" className="-mt-1 text-xs text-zinc-500">
+              Use 2–20 letters, numbers, or spaces.
+            </p>
 
             <Button
               id="continue-button"
               type="submit"
               size="lg"
+              disabled={!name.trim() || isSubmitting || isSessionLoading}
               className="h-[4.2rem] w-full rounded-[1.2rem] bg-indigo-600 text-[2rem] font-black tracking-[-0.05em] shadow-lg shadow-indigo-900/20 hover:bg-indigo-500"
               isLoading={isSubmitting || (isSessionLoading && isInitialized)}
             >

@@ -45,12 +45,12 @@ export default function HomePage() {
 
   // Redirect if unauthenticated
   useEffect(() => {
-    if (!isSessionLoading && !isInitialized) {
+    if (!isSessionLoading && (!isInitialized || !name?.trim())) {
       startTransition(() => {
         router.replace("/session");
       });
     }
-  }, [isInitialized, isSessionLoading, router]);
+  }, [isInitialized, isSessionLoading, name, router]);
 
   // Route based on room status
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function HomePage() {
     );
   }
 
-  const initial = name?.charAt(0)?.toUpperCase() || "P";
+  const initial = name?.charAt(0).toUpperCase();
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 min-h-screen">
@@ -135,7 +135,7 @@ export default function HomePage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-white text-base shadow-sm shadow-indigo-900/25 shrink-0">
-            {initial}
+            {initial || " "}
           </div>
           <div className="min-w-0">
             <p className="text-xs text-zinc-400 dark:text-zinc-500">Welcome back</p>
