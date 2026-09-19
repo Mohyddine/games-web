@@ -1,4 +1,4 @@
-import type { GameType, RpsChoice, Room, BoardState, GameStatus, ClientPlayerInfo, WinReason } from "./game";
+import type { GameType, RpsChoice, Room, BoardState, GameStatus, ClientPlayerInfo, WinReason, RpsState } from "./game";
 
 // Client-to-Server Events
 export interface ClientToServerEvents {
@@ -16,7 +16,18 @@ export interface ServerToClientEvents {
   "room:joined": (payload: { room: Room }) => void;
   "room:updated": (payload: { room: Room }) => void;
   "room:expired": (payload: { code: string; message: string }) => void;
-  "game:countdown": (payload: { count: number }) => void;
+  "game:countdown": (payload: { count: number; currentRound?: number; totalRounds?: number | null }) => void;
+  "game:round:started": (payload: { currentRound: number; totalRounds: number | null }) => void;
+  "game:round:result": (payload: {
+    currentRound: number;
+    totalRounds: number | null;
+    roundResult: {
+      winnerPlayerId: string | null;
+      isDraw: boolean;
+      playerChoices: Record<string, RpsChoice>;
+    };
+    scores: Record<string, number>;
+  }) => void;
   "game:state": (payload: {
     code: string;
     gameType: GameType;
@@ -25,6 +36,8 @@ export interface ServerToClientEvents {
     players: ClientPlayerInfo[];
     currentTurn: string | null;
     winner: string | "DRAW" | null;
+    winnerPlayerId?: string | "DRAW" | null;
+    winReason?: WinReason | null;
     turnTimeRemaining: number;
     connectionState: {
       allConnected: boolean;
@@ -33,11 +46,7 @@ export interface ServerToClientEvents {
       requestedBy: string;
       expiresAt: number;
     } | null;
-    rps?: {
-      myChoice: RpsChoice | null;
-      opponentChoice: RpsChoice | null;
-      opponentHasChosen: boolean;
-    } | null;
+    rps?: RpsState | null;
   }) => void;
   "game:finished": (payload: {
     winner: string | "DRAW" | null;

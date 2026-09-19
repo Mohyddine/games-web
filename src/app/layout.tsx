@@ -4,6 +4,8 @@ import "./globals.css";
 import { SessionProvider } from "@/context/SessionContext";
 import { RoomProvider } from "@/context/RoomContext";
 import { PwaRegistration } from "@/components/PwaRegistration";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SoundToggle } from "@/components/ui/SoundToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -98,6 +100,10 @@ export default function RootLayout({
         <PwaRegistration />
         <SessionProvider>
           <RoomProvider>
+            <div className="fixed right-4 top-4 z-50 flex items-center gap-2">
+              <SoundToggle />
+              <ThemeToggle />
+            </div>
             <div className="flex-1 flex flex-col">{children}</div>
           </RoomProvider>
         </SessionProvider>

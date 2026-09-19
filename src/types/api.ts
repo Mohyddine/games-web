@@ -29,6 +29,7 @@ export interface CreateRoomData {
   code: string;
   gameType: GameType;
   gameStatus: GameStatus;
+  totalRounds?: number | null;
 }
 
 export interface LeaveRoomData {

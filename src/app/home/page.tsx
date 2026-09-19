@@ -19,14 +19,14 @@ const GAME_OPTIONS: Array<{
   {
     id: "TIC_TAC_TOE",
     label: "Tic-Tac-Toe",
-    description: "Classic 3x3 strategy showdown",
+    description: "Classic 1v1 strategy",
     emoji: "❌⭕",
     accent: "from-indigo-500 to-indigo-600",
   },
   {
     id: "ROCK_PAPER_SCISSORS",
     label: "Rock Paper Scissors",
-    description: "Fast reaction match with hidden throws",
+    description: "Fast multi-round duel",
     emoji: "🪨✂️📄",
     accent: "from-amber-500 to-orange-500",
   },
@@ -53,6 +53,7 @@ export default function HomePage() {
   const { room, isLoadingRoom, error: roomError, createRoom, joinRoom, clearError } = useRoom();
 
   const [selectedGame, setSelectedGame] = useState<GameType>("TIC_TAC_TOE");
+  const [selectedRounds, setSelectedRounds] = useState<number>(3);
   const [joinCode, setJoinCode] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -96,7 +97,10 @@ export default function HomePage() {
     clearError();
     setIsCreating(true);
 
-    const code = await createRoom(selectedGame);
+    const code = await createRoom(
+      selectedGame,
+      selectedGame === "ROCK_PAPER_SCISSORS" ? selectedRounds : undefined
+    );
 
     setIsCreating(false);
     if (code) {
@@ -174,7 +178,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setSelectedGame(option.id)}
                   className={[
-                    "group relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-150 active:scale-[0.99] cursor-pointer",
+                    "group relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-150 cursor-pointer",
                     isSelected
                       ? "border-indigo-200 bg-indigo-50 shadow-sm dark:border-indigo-800 dark:bg-indigo-950/40"
                       : "border-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900",
@@ -205,6 +209,26 @@ export default function HomePage() {
             })}
           </div>
 
+          {selectedGame === "ROCK_PAPER_SCISSORS" && (
+            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/80 dark:bg-amber-950/20">
+              <label htmlFor="rps-rounds" className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
+                Number of rounds
+              </label>
+              <select
+                id="rps-rounds"
+                value={selectedRounds}
+                onChange={(event) => setSelectedRounds(Number(event.target.value))}
+                className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2.5 text-base font-semibold text-zinc-900 outline-none focus:ring-2 focus:ring-amber-500 dark:border-amber-700 dark:bg-zinc-950 dark:text-zinc-50"
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="mt-5">
             <Button
               id="create-game-btn"
@@ -218,79 +242,65 @@ export default function HomePage() {
               Create room
             </Button>
             {activeError && !showJoin && (
-              <p
-                role="alert"
-                className="mt-3 text-sm font-medium text-red-600 dark:text-red-400"
-              >
+              <p role="alert" className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
                 {activeError}
               </p>
             )}
           </div>
-        </section>
 
-        <section className="rounded-[1.6rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80 sm:p-5">
-          <button
-            type="button"
-            onClick={() => {
-              setShowJoin((current) => !current);
-              setLocalError(null);
-              clearError();
-            }}
-            className="flex w-full items-center justify-between gap-3 text-left"
-            disabled={isCreating || isLoadingRoom}
-          >
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Join existing</p>
-              <h3 className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-50">Enter room code</h3>
-            </div>
-            <svg
-              className={[
-                "h-5 w-5 text-zinc-500 transition-transform duration-200",
-                showJoin ? "rotate-180" : "",
-              ].join(" ")}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+          <div className="mt-4 flex items-center justify-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+            <span>or</span>
+            <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+          </div>
 
-          {showJoin && (
-            <form onSubmit={handleJoinRoom} className="mt-4 space-y-3">
-              <input
-                id="room-code-input"
-                type="text"
-                value={joinCode}
-                onChange={handleRoomCodeChange}
-                maxLength={5}
-                placeholder="ABCDE"
-                autoComplete="off"
-                className="h-14 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-center text-2xl font-black tracking-[0.28em] text-zinc-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
-                aria-label="Room code"
-              />
-
-              {activeError ? (
-                <p className="text-sm font-medium text-red-600 dark:text-red-400">{activeError}</p>
-              ) : (
-                <p className="text-xs text-zinc-500">Use the 5-character code shared by your opponent.</p>
-              )}
-
+          <div className="mt-4">
+            {!showJoin ? (
               <Button
-                id="join-game-btn"
-                type="submit"
+                type="button"
+                variant="outline"
                 size="lg"
-                variant="secondary"
                 className="w-full rounded-2xl"
-                disabled={isCreating || isLoadingRoom || isJoining || joinCode.length !== 5}
-                isLoading={isJoining}
+                onClick={() => setShowJoin(true)}
               >
-                Join room
+                Join with room code
               </Button>
-            </form>
-          )}
+            ) : (
+              <form onSubmit={handleJoinRoom} className="space-y-3">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="join-code-input">
+                  Enter room code
+                </label>
+                <input
+                  id="join-code-input"
+                  value={joinCode}
+                  onChange={handleRoomCodeChange}
+                  inputMode="text"
+                  maxLength={5}
+                  placeholder="ABCDE"
+                  className="h-12 w-full rounded-xl border border-zinc-300 bg-white px-4 text-center text-lg font-bold tracking-[0.35em] text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-600"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex-1 rounded-2xl"
+                    onClick={() => setShowJoin(false)}
+                    disabled={isJoining}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 rounded-2xl"
+                    disabled={joinCode.length !== 5 || isJoining || isLoadingRoom}
+                    isLoading={isJoining}
+                  >
+                    Join room
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
         </section>
       </div>
     </main>

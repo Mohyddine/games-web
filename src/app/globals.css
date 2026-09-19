@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ─────────────────────────────────────────── */
 :root {
   color-scheme: light;
   --background: #f9f9fb;
@@ -15,20 +14,18 @@
   --accent-muted: rgba(99, 102, 241, 0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --background: #09090b;
-    --foreground: #fafafa;
-    --surface: #18181b;
-    --surface-raised: #27272a;
-    --border: #27272a;
-    --border-subtle: #1f1f22;
-    --accent: #818cf8;
-    --accent-hover: #6366f1;
-    --accent-light: #a5b4fc;
-    --accent-muted: rgba(129, 140, 248, 0.1);
-  }
+html.dark {
+  color-scheme: dark;
+  --background: #09090b;
+  --foreground: #fafafa;
+  --surface: #18181b;
+  --surface-raised: #27272a;
+  --border: #27272a;
+  --border-subtle: #1f1f22;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-light: #a5b4fc;
+  --accent-muted: rgba(129, 140, 248, 0.1);
 }
 
 @theme inline {
@@ -38,18 +35,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* ─── Base ────────────────────────────────────────────────────── */
 body {
   background-color: var(--background);
-  background-image:
-    radial-gradient(ellipse 80% 40% at 50% -5%, rgba(99, 102, 241, 0.09) 0%, transparent 60%);
+  background-image: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(99, 102, 241, 0.09) 0%, transparent 60%);
   color: var(--foreground);
   font-family: var(--font-geist-sans, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Keyframes ───────────────────────────────────────────────── */
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -76,9 +70,9 @@ body {
 }
 
 @keyframes pulse-ring {
-  0%   { transform: scale(0.9);  opacity: 0.7; }
-  50%  { transform: scale(1.08); opacity: 0.3; }
-  100% { transform: scale(0.9);  opacity: 0.7; }
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.08); opacity: 0.3; }
+  100% { transform: scale(0.9); opacity: 0.7; }
 }
 
 @keyframes slide-up-in {
@@ -92,28 +86,13 @@ body {
   }
 }
 
-/* ─── Utility Classes ─────────────────────────────────────────── */
-.animate-fade-in-up {
-  animation: fade-in-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
+.animate-fade-in-up { animation: fade-in-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pop-in { animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-pulse-ring { animation: pulse-ring 2.2s ease-in-out infinite; }
+.animate-slide-up-in { animation: slide-up-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-.animate-pop-in {
-  animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-.animate-pulse-ring {
-  animation: pulse-ring 2.2s ease-in-out infinite;
-}
-
-.animate-slide-up-in {
-  animation: slide-up-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* ─── Reduced Motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -77,10 +77,15 @@ export const api = {
   },
 
   // Room: Create a new room
-  createRoom: async (gameType: GameType): Promise<CreateRoomData> => {
+  createRoom: async (gameType: GameType, rounds?: number): Promise<CreateRoomData> => {
+    const payload: { gameType: GameType; rounds?: number } = { gameType };
+    if (gameType === "ROCK_PAPER_SCISSORS" && Number.isInteger(rounds)) {
+      payload.rounds = rounds;
+    }
+
     return request<CreateRoomData>("/api/v1/rooms", {
       method: "POST",
-      body: JSON.stringify({ gameType }),
+      body: JSON.stringify(payload),
     });
   },
 

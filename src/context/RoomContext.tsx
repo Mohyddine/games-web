@@ -51,7 +51,7 @@ interface RoomContextValue {
   error: string | null;
 
   // Actions
-  createRoom: (gameType: GameType) => Promise<string | null>;
+  createRoom: (gameType: GameType, rounds?: number) => Promise<string | null>;
   joinRoom: (code: string) => Promise<Room | null>;
   leaveRoom: () => Promise<boolean>;
   restoreRoom: () => Promise<Room | null>;
@@ -70,6 +70,20 @@ const DEFAULT_BOARD: BoardState = [
   null, null, null,
   null, null, null,
 ];
+
+const EMPTY_RPS_STATE: RpsState = {
+  totalRounds: 1,
+  currentRound: 1,
+  myChoice: null,
+  opponentChoice: null,
+  opponentHasChosen: false,
+  acceptingChoices: true,
+  scores: {},
+  stats: {},
+  roundResult: null,
+  matchWinnerPlayerId: null,
+  roundHistory: [],
+};
 
 const RoomContext = createContext<RoomContextValue | undefined>(undefined);
 
@@ -137,7 +151,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
       setCurrentTurn(r.currentTurn);
       setTurnTimeRemaining(r.turnTimeRemaining ?? 30);
       setRematch(r.rematch || null);
-      setRps((prev) => (r.gameType === "ROCK_PAPER_SCISSORS" ? prev ?? { myChoice: null, opponentChoice: null, opponentHasChosen: false } : null));
+      setRps((prev) => (r.gameType === "ROCK_PAPER_SCISSORS" ? prev ?? EMPTY_RPS_STATE : null));
 
       if (r.rematch) {
         setRematchRequestedBy(r.rematch.requestedBy);
@@ -205,13 +219,13 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [syncFromRoom]);
 
   // Create room flow: POST /api/v1/rooms then sync
-  const createRoom = useCallback(async (selectedGameType: GameType): Promise<string | null> => {
+  const createRoom = useCallback(async (selectedGameType: GameType, rounds?: number): Promise<string | null> => {
     setIsLoadingRoom(true);
     setError(null);
     try {
       let createData;
       try {
-        createData = await api.createRoom(selectedGameType);
+        createData = await api.createRoom(selectedGameType, rounds);
       } catch (err) {
         if (
           err instanceof ApiClientError &&
@@ -222,7 +236,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
           if (!sessionRestored) {
             throw err;
           }
-          createData = await api.createRoom(selectedGameType);
+          createData = await api.createRoom(selectedGameType, rounds);
         } else {
           throw err;
         }
@@ -311,6 +325,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
     if (socket.connected) {
       socket.emit("game:rps:submit", { choice });
       setRps((prev) => ({
+        ...(prev ?? EMPTY_RPS_STATE),
         myChoice: choice,
         opponentChoice: prev?.opponentChoice ?? null,
         opponentHasChosen: prev?.opponentHasChosen ?? false,
@@ -435,7 +450,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
       turnTimeRemaining: number;
       connectionState: { allConnected: boolean };
       rematch: { requestedBy: string; expiresAt: number } | null;
-      rps?: { myChoice: RpsChoice | null; opponentChoice: RpsChoice | null; opponentHasChosen: boolean } | null;
+      rps?: RpsState | null;
     }) => {
       setCountdown(null);
       setGameType(payload.gameType);

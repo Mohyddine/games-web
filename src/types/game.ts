@@ -45,10 +45,37 @@ export interface RematchState {
   expiresAt: number;
 }
 
+export interface RpsPlayerStats {
+  roundsWon: number;
+  draws: number;
+  roundsPlayed: number;
+}
+
+export interface RpsRoundResult {
+  winnerPlayerId: string | null;
+  isDraw: boolean;
+  playerChoices: Partial<Record<string, RpsChoice>>;
+}
+
+export interface RpsRoundHistoryEntry {
+  round: number;
+  playerChoices: Record<string, RpsChoice>;
+  winnerPlayerId: string | null;
+  isDraw: boolean;
+}
+
 export interface RpsState {
+  totalRounds: number;
+  currentRound: number;
   myChoice: RpsChoice | null;
   opponentChoice: RpsChoice | null;
   opponentHasChosen: boolean;
+  acceptingChoices: boolean;
+  scores: Record<string, number>;
+  stats: Record<string, RpsPlayerStats>;
+  roundResult: RpsRoundResult | null;
+  matchWinnerPlayerId: string | "DRAW" | null;
+  roundHistory: RpsRoundHistoryEntry[];
 }
 
 export interface Room {
@@ -64,6 +91,12 @@ export interface Room {
   currentTurn: string | null;
   turnTimeRemaining: number;
   rematch: RematchState | null;
+  totalRounds?: number | null;
+  currentRound?: number;
+  playerScores?: Record<string, number>;
+  rpsStats?: Record<string, RpsPlayerStats>;
+  roundResult?: RpsRoundResult | null;
+  rpsRoundHistory?: RpsRoundHistoryEntry[];
 }
 
 export interface ClientPlayerInfo {
