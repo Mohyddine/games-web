@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Real-Time Multiplayer Games",
     short_name: "Game Arena",
-    description: "Challenge a friend to real-time Tic-Tac-Toe or Rock Paper Scissors matches.",
+    description: "Challenge a friend to real-time XO or RPS matches.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

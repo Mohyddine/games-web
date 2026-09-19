@@ -301,7 +301,7 @@ export default function GamePage() {
         <header className="flex flex-col gap-3 rounded-[1.6rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Match</p>
-            <h1 className="mt-1 text-2xl font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">{isRpsGame ? "Rock Paper Scissors" : "Tic-Tac-Toe"}</h1>
+            <h1 className="mt-1 text-2xl font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">{isRpsGame ? "RPS" : "XO"}</h1>
           </div>
 
           <div className="flex items-center gap-2 sm:justify-end">

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | Real-Time Multiplayer Games",
   },
   description:
-    "Challenge a friend to fast, real-time 1-vs-1 browser games. Choose Tic-Tac-Toe or Rock Paper Scissors, create a room, and play instantly.",
+    "Challenge a friend to fast, real-time 1-vs-1 browser games. Choose XO or RPS, create a room, and play instantly.",
   applicationName: "Real-Time Multiplayer Games",
   keywords: [
     "multiplayer games",
@@ -64,14 +64,14 @@ export const metadata: Metadata = {
     siteName: "Real-Time Multiplayer Games",
     title: "Real-Time Multiplayer Games",
     description:
-      "Challenge a friend to Tic-Tac-Toe or Rock Paper Scissors in a fast, real-time browser match.",
+      "Challenge a friend to XO or RPS in a fast, real-time browser match.",
     url: "/",
   },
   twitter: {
     card: "summary",
     title: "Real-Time Multiplayer Games",
     description:
-      "Challenge a friend to Tic-Tac-Toe or Rock Paper Scissors in a fast, real-time browser match.",
+      "Challenge a friend to XO or RPS in a fast, real-time browser match.",
   },
   manifest: "/manifest.webmanifest",
 };

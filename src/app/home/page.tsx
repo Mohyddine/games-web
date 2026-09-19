@@ -11,26 +11,46 @@ const VALID_ROOM_CODE_REGEX = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]*$/;
 
 const GAME_OPTIONS: Array<{
   id: GameType;
-  label: string;
-  description: string;
-  emoji: string;
+  title: string;
   accent: string;
 }> = [
   {
     id: "TIC_TAC_TOE",
-    label: "Tic-Tac-Toe",
-    description: "Classic 1v1 strategy",
-    emoji: "❌⭕",
+    title: "XO",
     accent: "from-indigo-500 to-indigo-600",
   },
   {
     id: "ROCK_PAPER_SCISSORS",
-    label: "Rock Paper Scissors",
-    description: "Fast multi-round duel",
-    emoji: "🪨✂️📄",
+    title: "RPS",
     accent: "from-amber-500 to-orange-500",
   },
 ];
+
+function GameIcon({ gameType, isSelected }: { gameType: GameType; isSelected: boolean }) {
+  const stroke = isSelected ? "#f8fafc" : "#e2e8f0";
+
+  if (gameType === "TIC_TAC_TOE") {
+    return (
+      <svg viewBox="0 0 96 96" className="h-16 w-16" aria-hidden="true">
+        <g stroke={stroke} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+          <path d="M32 22L18 36M18 22L32 36" />
+          <path d="M78 22L64 36M64 22L78 36" />
+          <circle cx="48" cy="48" r="14" />
+        </g>
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 96 96" className="h-16 w-16" aria-hidden="true">
+      <g fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M25 72l18-42 18 42H25Z" opacity="0.9" />
+        <path d="M49 18h16l10 14-10 14H49L39 32l10-14Z" opacity="0.85" />
+        <path d="M14 36h16l10 14-10 14H14L4 50l10-14Z" opacity="0.8" />
+      </g>
+    </svg>
+  );
+}
 
 function Spinner() {
   return (
@@ -178,36 +198,23 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setSelectedGame(option.id)}
                   className={[
-                    "group relative overflow-hidden rounded-[1.6rem] border p-3 text-left transition-all duration-200 cursor-pointer",
+                    "group relative overflow-hidden rounded-[1.8rem] border p-3 text-left transition-all duration-200 cursor-pointer",
                     isSelected
                       ? "border-transparent bg-[linear-gradient(135deg,rgba(91,92,230,0.16),rgba(168,85,247,0.12))] shadow-[0_18px_32px_rgba(91,92,230,0.18)] ring-2 ring-indigo-500/30"
                       : "border-[var(--border)] bg-[rgba(255,255,255,0.45)] hover:-translate-y-0.5 hover:bg-[rgba(255,255,255,0.7)] dark:bg-[rgba(15,23,42,0.6)] dark:hover:bg-[rgba(15,23,42,0.8)]",
                   ].join(" ")}
                 >
                   <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${option.accent}`} />
-                  <div className="flex items-center justify-between gap-3">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${option.accent} text-2xl shadow-lg shadow-indigo-900/10`} aria-hidden="true">
-                      {option.emoji}
+                  <div className="flex items-center justify-between">
+                    <div className={`flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-gradient-to-br ${option.accent} shadow-lg shadow-indigo-900/10`}>
+                      <GameIcon gameType={option.id} isSelected={isSelected} />
                     </div>
-                    <span
-                      className={[
-                        "flex h-5 w-5 items-center justify-center rounded-full border-2",
-                        isSelected
-                          ? "border-indigo-500 bg-indigo-500 text-white"
-                          : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900",
-                      ].join(" ")}
-                    >
-                      {isSelected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
-                    </span>
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/90 bg-white/20 text-[10px] font-bold text-slate-700 shadow-sm dark:border-zinc-800 dark:text-zinc-100">
+                      {isSelected ? "✓" : ""}
+                    </div>
                   </div>
-
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <span className="rounded-full bg-white/70 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-300">
-                      {option.id === "TIC_TAC_TOE" ? "Classic" : "Quick"}
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                      {isSelected ? "Open" : "Tap"}
-                    </span>
+                  <div className="mt-4">
+                    <p className="text-center text-lg font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">{option.title}</p>
                   </div>
                 </button>
               );
