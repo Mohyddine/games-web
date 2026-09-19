@@ -16,12 +16,22 @@ export const Board: React.FC<BoardProps> = ({
   winningCells = [],
 }) => {
   return (
-    <div className="mx-auto w-full max-w-[420px] rounded-[1.8rem] border border-zinc-200 bg-zinc-100 p-3 shadow-inner shadow-zinc-200/80 dark:border-zinc-800 dark:bg-zinc-900/80 dark:shadow-zinc-900">
+    <div
+      className="mx-auto w-full max-w-[380px] rounded-3xl p-3"
+      style={{
+        background: "var(--bg-sunken)",
+        border: "1px solid var(--border)",
+        boxShadow: "inset 0 2px 8px rgba(0,0,0,0.08)",
+      }}
+    >
       <div className="grid aspect-square w-full grid-cols-3 gap-2.5">
         {board.map((cellValue, idx) => {
           const isFilled = cellValue !== null;
           const isClickable = !disabled && !isFilled;
           const isWinning = winningCells.includes(idx);
+
+          const isX = cellValue === "X";
+          const isO = cellValue === "O";
 
           return (
             <button
@@ -30,21 +40,51 @@ export const Board: React.FC<BoardProps> = ({
               disabled={!isClickable}
               onClick={() => onCellClick(idx)}
               aria-label={`Cell ${idx + 1}${cellValue ? `, ${cellValue}` : ", empty"}`}
-              className={[
-                "flex aspect-square w-full items-center justify-center rounded-2xl border text-4xl font-black sm:text-5xl",
-                isWinning
-                  ? cellValue === "X"
-                    ? "border-indigo-200 bg-indigo-100 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300"
-                    : "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-950/70 dark:text-amber-300"
+              className="flex aspect-square w-full items-center justify-center rounded-2xl text-4xl font-black sm:text-5xl select-none focus-visible:outline-none transition-all duration-200"
+              style={{
+                background: isWinning
+                  ? isX
+                    ? "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))"
+                    : "linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.2))"
                   : isFilled
-                    ? "border-zinc-200 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50"
+                    ? "var(--bg-surface)"
                     : isClickable
-                      ? "border-zinc-200 bg-white text-zinc-900 hover:bg-indigo-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:hover:bg-indigo-950/25"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-500",
-                cellValue === "X" ? "text-indigo-600 dark:text-indigo-400" : "",
-                cellValue === "O" ? "text-amber-600 dark:text-amber-400" : "",
-                "select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-100 dark:focus-visible:ring-offset-zinc-900",
-              ].join(" ")}
+                      ? "var(--bg-surface)"
+                      : "var(--bg-raised)",
+                border: isWinning
+                  ? isX
+                    ? "2px solid rgba(99,102,241,0.5)"
+                    : "2px solid rgba(245,158,11,0.5)"
+                  : `1.5px solid var(--border)`,
+                color: isWinning
+                  ? isX ? "#6366f1" : "#f59e0b"
+                  : isX
+                    ? "#6366f1"
+                    : isO
+                      ? "#f59e0b"
+                      : "var(--fg-subtle)",
+                boxShadow: isWinning
+                  ? isX
+                    ? "0 4px 16px rgba(99,102,241,0.25)"
+                    : "0 4px 16px rgba(245,158,11,0.25)"
+                  : isClickable
+                    ? "var(--shadow-sm)"
+                    : "none",
+                cursor: isClickable ? "pointer" : "default",
+                transform: isWinning ? "scale(1.04)" : "scale(1)",
+              }}
+              onMouseEnter={(e) => {
+                if (isClickable) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.04)";
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "var(--shadow-md)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isClickable) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = isWinning ? "scale(1.04)" : "scale(1)";
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "var(--shadow-sm)";
+                }
+              }}
             >
               {cellValue ?? ""}
             </button>

@@ -20,12 +20,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "Real-Time Multiplayer Games",
-    template: "%s | Real-Time Multiplayer Games",
+    default: "GameHub — Real-Time Multiplayer",
+    template: "%s | GameHub",
   },
   description:
     "Challenge a friend to fast, real-time 1-vs-1 browser games. Choose XO or RPS, create a room, and play instantly.",
-  applicationName: "Real-Time Multiplayer Games",
+  applicationName: "GameHub",
   keywords: [
     "multiplayer games",
     "tic-tac-toe",
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
     "online game",
     "browser game",
   ],
-  authors: [{ name: "Real-Time Multiplayer Games" }],
-  creator: "Real-Time Multiplayer Games",
+  authors: [{ name: "GameHub" }],
+  creator: "GameHub",
   category: "games",
   referrer: "origin-when-cross-origin",
   icons: {
@@ -61,15 +61,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "Real-Time Multiplayer Games",
-    title: "Real-Time Multiplayer Games",
+    siteName: "GameHub",
+    title: "GameHub — Real-Time Multiplayer Games",
     description:
       "Challenge a friend to XO or RPS in a fast, real-time browser match.",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "Real-Time Multiplayer Games",
+    title: "GameHub — Real-Time Multiplayer Games",
     description:
       "Challenge a friend to XO or RPS in a fast, real-time browser match.",
   },
@@ -78,8 +78,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f9f9fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+    { media: "(prefers-color-scheme: light)", color: "#f0f2f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0d14" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -94,18 +94,53 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
-        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,_rgba(91,92,230,0.12),_transparent_30%)]" />
+      <body className="min-h-full flex flex-col">
+        {/* Ambient background orbs */}
+        <div
+          className="pointer-events-none fixed inset-0 overflow-hidden"
+          aria-hidden="true"
+        >
+          <div
+            className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full opacity-30"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%)",
+              filter: "blur(60px)",
+            }}
+          />
+          <div
+            className="absolute -bottom-32 -left-32 h-[400px] w-[400px] rounded-full opacity-20"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)",
+              filter: "blur(60px)",
+            }}
+          />
+        </div>
+
         <PwaRegistration />
         <SessionProvider>
           <RoomProvider>
-            <div className="fixed right-4 top-4 z-50 flex items-center gap-2 rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.7)] p-1.5 shadow-lg shadow-[var(--shadow)] backdrop-blur-xl dark:bg-[rgba(15,23,42,0.72)]">
+            {/* Controls pill — fixed top-right */}
+            <div
+              className="fixed right-4 top-4 z-50 flex items-center gap-1.5 rounded-2xl p-1.5"
+              style={{
+                background: "var(--glass)",
+                border: "1px solid var(--glass-border)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                boxShadow: "var(--shadow-md)",
+              }}
+            >
               <SoundToggle />
               <ThemeToggle />
             </div>
-            <div className="relative flex-1 flex flex-col">{children}</div>
+
+            <div className="relative flex-1 flex flex-col">
+              {children}
+            </div>
           </RoomProvider>
         </SessionProvider>
       </body>

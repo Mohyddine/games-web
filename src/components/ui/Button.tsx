@@ -16,23 +16,18 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const base =
-    "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900 disabled:opacity-50 disabled:pointer-events-none select-none active:scale-[0.97] cursor-pointer";
+    "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 select-none cursor-pointer focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.96]";
 
   const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
-    primary:
-      "bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-400 hover:to-violet-400 active:from-indigo-600 active:to-violet-600 shadow-lg shadow-indigo-500/20 dark:shadow-indigo-900/40",
-    secondary:
-      "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
-    outline:
-      "border border-[var(--border)] bg-white/40 text-zinc-800 hover:bg-white/80 dark:bg-zinc-900/40 dark:text-zinc-200 dark:hover:bg-zinc-800/80",
-    ghost:
-      "bg-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100",
-    danger:
-      "border border-red-200 dark:border-red-900/50 bg-transparent text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30",
+    primary: "btn-primary",
+    secondary: "btn-secondary",
+    outline: "btn-outline",
+    ghost: "btn-ghost",
+    danger: "btn-danger",
   };
 
   const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
-    sm: "h-9 px-3.5 text-sm gap-1.5",
+    sm: "h-9 px-4 text-sm gap-1.5",
     md: "h-11 px-5 text-sm gap-2",
     lg: "h-12 px-6 text-base gap-2",
   };

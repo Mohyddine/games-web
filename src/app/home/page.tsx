@@ -13,32 +13,28 @@ const VALID_ROOM_CODE_REGEX = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]*$/;
 const GAME_OPTIONS: Array<{
   id: GameType;
   title: string;
-  accent: string;
+  subtitle: string;
+  icon: string;
+  gradient: string;
+  glow: string;
 }> = [
   {
     id: "TIC_TAC_TOE",
     title: "XO",
-    accent: "from-indigo-500 to-indigo-600",
+    subtitle: "Tic-Tac-Toe",
+    icon: "/xo-game.svg",
+    gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    glow: "rgba(99,102,241,0.3)",
   },
   {
     id: "ROCK_PAPER_SCISSORS",
     title: "RPS",
-    accent: "from-amber-500 to-orange-500",
+    subtitle: "Rock Paper Scissors",
+    icon: "/rps-game.svg",
+    gradient: "linear-gradient(135deg, #f59e0b, #ef4444)",
+    glow: "rgba(245,158,11,0.3)",
   },
 ];
-
-function GameIcon({ gameType }: { gameType: GameType }) {
-  return (
-    <Image
-      src={gameType === "TIC_TAC_TOE" ? "/xo-game.svg" : "/rps-game.svg"}
-      width={512}
-      height={512}
-      alt=""
-      className="h-full w-full rounded-[1.5rem] object-cover"
-      aria-hidden="true"
-    />
-  );
-}
 
 function Spinner() {
   return (
@@ -93,7 +89,6 @@ export default function HomePage() {
   const handleRoomCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLocalError(null);
     clearError();
-
     const rawValue = event.target.value.toUpperCase();
     if (VALID_ROOM_CODE_REGEX.test(rawValue) && rawValue.length <= 5) {
       setJoinCode(rawValue);
@@ -104,12 +99,10 @@ export default function HomePage() {
     setLocalError(null);
     clearError();
     setIsCreating(true);
-
     const code = await createRoom(
       selectedGame,
       selectedGame === "ROCK_PAPER_SCISSORS" ? selectedRounds : undefined
     );
-
     setIsCreating(false);
     if (code) {
       startTransition(() => router.push("/waiting"));
@@ -120,17 +113,14 @@ export default function HomePage() {
     event.preventDefault();
     setLocalError(null);
     clearError();
-
     const trimmedCode = joinCode.trim().toUpperCase();
     if (trimmedCode.length !== 5) {
       setLocalError("Room code must be exactly 5 characters.");
       return;
     }
-
     setIsJoining(true);
     const joinedRoom = await joinRoom(trimmedCode);
     setIsJoining(false);
-
     if (joinedRoom) {
       startTransition(() => {
         if (joinedRoom.gameStatus === "WAITING") {
@@ -146,8 +136,8 @@ export default function HomePage() {
 
   if (isSessionLoading || !isInitialized) {
     return (
-      <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
-        <div className="flex items-center gap-3 text-sm text-zinc-400">
+      <main className="flex min-h-screen flex-1 items-center justify-center p-4">
+        <div className="flex items-center gap-3 text-sm" style={{ color: "var(--fg-muted)" }}>
           <Spinner />
           <span>Loading session…</span>
         </div>
@@ -155,80 +145,147 @@ export default function HomePage() {
     );
   }
 
+  const selectedOption = GAME_OPTIONS.find((g) => g.id === selectedGame)!;
+
   return (
     <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-lg space-y-6">
-        <header className="flex items-center gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_12px_36px_var(--shadow)] backdrop-blur-xl">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-lg font-black text-white shadow-lg shadow-indigo-500/20">
+      <div className="w-full max-w-md space-y-4 animate-fade-up">
+
+        {/* Profile header */}
+        <div
+          className="flex items-center gap-4 rounded-3xl p-4"
+          style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {/* Avatar */}
+          <div
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-xl font-black text-white"
+            style={{
+              background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
+              boxShadow: "0 4px 12px var(--accent-glow)",
+            }}
+          >
             {name?.charAt(0).toUpperCase() || "G"}
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-500">Welcome back</p>
-            <h1 className="truncate text-lg font-extrabold text-zinc-900 dark:text-zinc-50">{name}</h1>
+            <p className="label-tag">Welcome back</p>
+            <h1 className="mt-0.5 truncate text-lg font-extrabold" style={{ color: "var(--fg)" }}>
+              {name}
+            </h1>
           </div>
-        </header>
+          {/* Online indicator */}
+          <div className="ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)" }}>
+            <span className="h-2 w-2 rounded-full" style={{ background: "var(--green)", boxShadow: "0 0 6px var(--green)" }} />
+            <span className="text-xs font-semibold" style={{ color: "var(--green)" }}>Online</span>
+          </div>
+        </div>
 
-        <section className="rounded-[1.7rem] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_var(--shadow)] backdrop-blur-xl sm:p-5">
-          <div className="mb-4 flex items-center justify-between gap-2">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Game mode</p>
-              <h2 className="mt-1 text-2xl font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">Choose a game</h2>
-            </div>
+        {/* Game selector */}
+        <div
+          className="rounded-3xl p-5"
+          style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-md)",
+          }}
+        >
+          <div className="mb-4">
+            <p className="label-tag">Select game</p>
+            <h2 className="mt-1 text-xl font-black" style={{ color: "var(--fg)" }}>
+              Choose your battle
+            </h2>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            {GAME_OPTIONS.map((option) => {
+          {/* Game cards — app icon style */}
+          <div className="grid grid-cols-2 gap-3">
+            {GAME_OPTIONS.map((option, i) => {
               const isSelected = selectedGame === option.id;
-
               return (
                 <button
                   key={option.id}
                   type="button"
                   onClick={() => setSelectedGame(option.id)}
-                  className={[
-                    "group relative overflow-hidden rounded-[1.8rem] border p-3 text-left transition-all duration-200 cursor-pointer",
-                    isSelected
-                      ? "border-transparent bg-[linear-gradient(135deg,rgba(91,92,230,0.16),rgba(168,85,247,0.12))] shadow-[0_18px_32px_rgba(91,92,230,0.18)] ring-2 ring-indigo-500/30"
-                      : "border-[var(--border)] bg-[rgba(255,255,255,0.45)] hover:-translate-y-0.5 hover:bg-[rgba(255,255,255,0.7)] dark:bg-[rgba(15,23,42,0.6)] dark:hover:bg-[rgba(15,23,42,0.8)]",
-                  ].join(" ")}
+                  className={`group relative overflow-hidden rounded-2xl p-1 transition-all duration-300 cursor-pointer focus-visible:outline-none animate-fade-up`}
+                  style={{
+                    animationDelay: `${i * 60}ms`,
+                    border: isSelected
+                      ? `2px solid var(--accent)`
+                      : "2px solid var(--border)",
+                    boxShadow: isSelected
+                      ? `0 8px 24px ${option.glow}, var(--shadow-md)`
+                      : "var(--shadow-sm)",
+                    background: isSelected ? "var(--accent-soft)" : "var(--bg-raised)",
+                    transform: isSelected ? "scale(1.02)" : "scale(1)",
+                  }}
                 >
-                  <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${option.accent}`} />
-                  <div className="flex items-center justify-between">
-                    <div className="h-20 w-20 overflow-hidden rounded-[1.5rem] shadow-lg shadow-indigo-900/10">
-                      <GameIcon gameType={option.id} />
-                    </div>
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/90 bg-white/20 text-[10px] font-bold text-slate-700 shadow-sm dark:border-zinc-800 dark:text-zinc-100">
-                      {isSelected ? "✓" : ""}
-                    </div>
+                  {/* Game image — app icon style */}
+                  <div
+                    className="relative h-28 w-full overflow-hidden rounded-xl"
+                    style={{ background: isSelected ? option.gradient : "var(--bg-sunken)" }}
+                  >
+                    <Image
+                      src={option.icon}
+                      width={512}
+                      height={512}
+                      alt={option.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90">
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                  <div className="mt-4">
-                    <p className="text-center text-lg font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">{option.title}</p>
+                  <div className="px-1 pt-2.5 pb-1.5 text-left">
+                    <p className="text-base font-black" style={{ color: "var(--fg)" }}>{option.title}</p>
+                    <p className="text-[11px]" style={{ color: "var(--fg-muted)" }}>{option.subtitle}</p>
                   </div>
                 </button>
               );
             })}
           </div>
 
+          {/* Rounds selector for RPS */}
           {selectedGame === "ROCK_PAPER_SCISSORS" && (
-            <div className="mt-4 rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 p-3 shadow-sm dark:border-amber-900/80 dark:from-amber-950/20 dark:to-orange-950/10">
-              <label htmlFor="rps-rounds" className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
-                Number of rounds
+            <div
+              className="mt-4 rounded-2xl p-4"
+              style={{
+                background: "rgba(245,158,11,0.08)",
+                border: "1px solid rgba(245,158,11,0.25)",
+              }}
+            >
+              <label
+                htmlFor="rps-rounds"
+                className="block mb-2 text-xs font-bold uppercase tracking-widest"
+                style={{ color: "#d97706" }}
+              >
+                ⚡ Number of rounds
               </label>
               <select
                 id="rps-rounds"
                 value={selectedRounds}
                 onChange={(event) => setSelectedRounds(Number(event.target.value))}
-                className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2.5 text-base font-semibold text-zinc-900 outline-none ring-0 transition focus:border-amber-500 dark:border-amber-700 dark:bg-zinc-950 dark:text-zinc-50"
+                className="input-base h-10 px-3 text-sm font-semibold"
+                style={{
+                  borderColor: "rgba(245,158,11,0.4)",
+                  background: "var(--bg-surface)",
+                }}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
                   <option key={option} value={option}>
-                    {option}
+                    {option} {option === 1 ? "round" : "rounds"}
                   </option>
                 ))}
               </select>
             </div>
           )}
 
+          {/* Create button */}
           <div className="mt-5">
             <Button
               id="create-game-btn"
@@ -239,21 +296,23 @@ export default function HomePage() {
               disabled={isJoining || isLoadingRoom || isCreating}
               isLoading={isCreating}
             >
-              Create room
+              🚀 Create Room
             </Button>
             {activeError && !showJoin && (
-              <p role="alert" className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
+              <p role="alert" className="mt-3 text-sm font-medium" style={{ color: "var(--red)" }}>
                 {activeError}
               </p>
             )}
           </div>
 
-          <div className="mt-4 flex items-center justify-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-            <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
-            <span>or</span>
-            <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+          {/* Divider */}
+          <div className="mt-5 flex items-center gap-3">
+            <span className="h-px flex-1" style={{ background: "var(--border)" }} />
+            <span className="text-xs font-semibold" style={{ color: "var(--fg-subtle)" }}>or join existing</span>
+            <span className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
 
+          {/* Join section */}
           <div className="mt-4">
             {!showJoin ? (
               <Button
@@ -263,31 +322,46 @@ export default function HomePage() {
                 className="w-full rounded-2xl"
                 onClick={() => setShowJoin(true)}
               >
-                Join with room code
+                🔑 Join with Room Code
               </Button>
             ) : (
-              <form onSubmit={handleJoinRoom} className="space-y-3">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="join-code-input">
-                  Enter room code
-                </label>
-                <input
-                  id="join-code-input"
-                  value={joinCode}
-                  onChange={handleRoomCodeChange}
-                  inputMode="text"
-                  maxLength={5}
-                  placeholder="ABCDE"
-                  className="h-12 w-full rounded-xl border border-zinc-300 bg-white px-4 text-center text-lg font-bold tracking-[0.35em] text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-600"
-                />
+              <form onSubmit={handleJoinRoom} className="space-y-3 animate-fade-up">
+                <div>
+                  <label
+                    className="block mb-2 text-sm font-semibold"
+                    htmlFor="join-code-input"
+                    style={{ color: "var(--fg)" }}
+                  >
+                    Enter room code
+                  </label>
+                  <input
+                    id="join-code-input"
+                    value={joinCode}
+                    onChange={handleRoomCodeChange}
+                    inputMode="text"
+                    maxLength={5}
+                    placeholder="ABCDE"
+                    className="input-base h-14 px-4 text-center text-2xl font-black tracking-[0.3em]"
+                    style={{
+                      fontFamily: "var(--font-geist-mono)",
+                      borderColor: activeError ? "var(--red)" : undefined,
+                    }}
+                  />
+                  {activeError && showJoin && (
+                    <p role="alert" className="mt-2 text-sm font-medium" style={{ color: "var(--red)" }}>
+                      {activeError}
+                    </p>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="ghost"
                     className="flex-1 rounded-2xl"
-                    onClick={() => setShowJoin(false)}
+                    onClick={() => { setShowJoin(false); setJoinCode(""); clearError(); }}
                     disabled={isJoining}
                   >
-                    Back
+                    ← Back
                   </Button>
                   <Button
                     type="submit"
@@ -295,13 +369,13 @@ export default function HomePage() {
                     disabled={joinCode.length !== 5 || isJoining || isLoadingRoom}
                     isLoading={isJoining}
                   >
-                    Join room
+                    Join Room
                   </Button>
                 </div>
               </form>
             )}
           </div>
-        </section>
+        </div>
       </div>
     </main>
   );

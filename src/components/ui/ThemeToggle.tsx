@@ -5,37 +5,53 @@ import React, { useEffect, useState } from "react";
 const THEME_KEY = "game-theme";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-    const storedTheme = window.localStorage.getItem(THEME_KEY);
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const nextTheme = storedTheme === "dark" || storedTheme === "light" ? storedTheme : prefersDark ? "dark" : "light";
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
-    document.documentElement.style.colorScheme = nextTheme;
-    return nextTheme;
-  });
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.style.colorScheme = theme;
-  }, [theme]);
+    const storedTheme = window.localStorage.getItem(THEME_KEY);
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const resolved = storedTheme === "dark" || storedTheme === "light"
+      ? storedTheme
+      : prefersDark ? "dark" : "light";
+    applyTheme(resolved);
+    setTheme(resolved);
+    setMounted(true);
+  }, []);
+
+  const applyTheme = (t: "light" | "dark") => {
+    document.documentElement.classList.toggle("dark", t === "dark");
+    document.documentElement.style.colorScheme = t;
+  };
 
   const onToggle = () => {
     const next = theme === "dark" ? "light" : "dark";
+    applyTheme(next);
     setTheme(next);
     window.localStorage.setItem(THEME_KEY, next);
-    document.documentElement.classList.toggle("dark", next === "dark");
-    document.documentElement.style.colorScheme = next;
   };
+
+  if (!mounted) {
+    return (
+      <div className="inline-flex h-10 w-10 items-center justify-center rounded-full opacity-0" />
+    );
+  }
 
   return (
     <button
       type="button"
-      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       onClick={onToggle}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-white/80 text-lg shadow-sm transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-100 dark:hover:bg-zinc-800"
+      className="group inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
+      style={{
+        background: "var(--bg-raised)",
+        border: "1px solid var(--border)",
+        color: "var(--fg-muted)",
+      }}
     >
-      {theme === "dark" ? "☀️" : "🌙"}
+      <span className="text-base transition-transform duration-300 group-hover:rotate-12">
+        {theme === "dark" ? "☀️" : "🌙"}
+      </span>
     </button>
   );
 }
