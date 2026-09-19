@@ -97,14 +97,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,_rgba(91,92,230,0.12),_transparent_30%)]" />
         <PwaRegistration />
         <SessionProvider>
           <RoomProvider>
-            <div className="fixed right-4 top-4 z-50 flex items-center gap-2">
+            <div className="fixed right-4 top-4 z-50 flex items-center gap-2 rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.7)] p-1.5 shadow-lg shadow-[var(--shadow)] backdrop-blur-xl dark:bg-[rgba(15,23,42,0.72)]">
               <SoundToggle />
               <ThemeToggle />
             </div>
-            <div className="flex-1 flex flex-col">{children}</div>
+            <div className="relative flex-1 flex flex-col">{children}</div>
           </RoomProvider>
         </SessionProvider>
       </body>

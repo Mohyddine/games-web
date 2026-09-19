@@ -83,7 +83,7 @@ export default function SessionPage() {
           </p>
         </div>
 
-        <div className="w-full rounded-[1.7rem] border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/80 p-6 shadow-sm">
+        <div className="w-full rounded-[1.7rem] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_18px_40px_var(--shadow)] backdrop-blur-xl">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
               id="player-name-input"
@@ -102,7 +102,7 @@ export default function SessionPage() {
               error={activeError}
               aria-invalid={Boolean(activeError)}
               aria-describedby="player-name-hint"
-              className="!h-[4.15rem] !rounded-2xl !border-[3px] !px-5 !text-[2.25rem] !font-medium !leading-none !tracking-[-0.04em] !bg-white dark:!bg-zinc-950"
+              className="!h-[4.15rem] !rounded-2xl !border-[3px] !border-[var(--border)] !px-5 !text-[2.25rem] !font-medium !leading-none !tracking-[-0.04em] !bg-white/80 dark:!bg-zinc-950/80"
               style={{ boxShadow: "none" }}
             />
             <p id="player-name-hint" className="-mt-1 text-xs text-zinc-500 dark:text-zinc-400">

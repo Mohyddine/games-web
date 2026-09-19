@@ -119,7 +119,7 @@ export default function WaitingPage() {
           <span className="relative h-4 w-4 rounded-full bg-indigo-500 shadow-md shadow-indigo-500/30" />
         </div>
 
-        <div className="rounded-[1.8rem] border border-zinc-200/80 bg-white/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+        <div className="rounded-[1.8rem] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_18px_40px_var(--shadow)] backdrop-blur-xl">
           <div className="mb-4 text-center">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-500">Room code</p>
             <div id="room-code-display" className="mt-3 font-mono text-[2.1rem] font-black tracking-[0.22em] text-zinc-900 dark:text-zinc-50">

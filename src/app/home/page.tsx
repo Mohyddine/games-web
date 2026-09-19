@@ -149,26 +149,26 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-1 items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md space-y-6">
-        <header className="flex items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-500 text-lg font-black text-white shadow-sm shadow-indigo-900/20">
+      <div className="w-full max-w-lg space-y-6">
+        <header className="flex items-center gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_12px_36px_var(--shadow)] backdrop-blur-xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-lg font-black text-white shadow-lg shadow-indigo-500/20">
             {name?.charAt(0).toUpperCase() || "G"}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">Welcome back</p>
-            <h1 className="truncate text-lg font-bold text-zinc-900 dark:text-zinc-50">{name}</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-500">Welcome back</p>
+            <h1 className="truncate text-lg font-extrabold text-zinc-900 dark:text-zinc-50">{name}</h1>
           </div>
         </header>
 
-        <section className="rounded-[1.6rem] border border-zinc-200/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80 sm:p-5">
+        <section className="rounded-[1.7rem] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_var(--shadow)] backdrop-blur-xl sm:p-5">
           <div className="mb-4 flex items-center justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Game mode</p>
-              <h2 className="mt-1 text-xl font-black tracking-[-0.04em] text-zinc-900 dark:text-zinc-50">Choose a game</h2>
+              <h2 className="mt-1 text-2xl font-black tracking-[-0.05em] text-zinc-900 dark:text-zinc-50">Choose a game</h2>
             </div>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {GAME_OPTIONS.map((option) => {
               const isSelected = selectedGame === option.id;
 
@@ -178,24 +178,20 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setSelectedGame(option.id)}
                   className={[
-                    "group relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-150 cursor-pointer",
+                    "group relative overflow-hidden rounded-[1.6rem] border p-3 text-left transition-all duration-200 cursor-pointer",
                     isSelected
-                      ? "border-indigo-200 bg-indigo-50 shadow-sm dark:border-indigo-800 dark:bg-indigo-950/40"
-                      : "border-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900",
+                      ? "border-transparent bg-[linear-gradient(135deg,rgba(91,92,230,0.16),rgba(168,85,247,0.12))] shadow-[0_18px_32px_rgba(91,92,230,0.18)] ring-2 ring-indigo-500/30"
+                      : "border-[var(--border)] bg-[rgba(255,255,255,0.45)] hover:-translate-y-0.5 hover:bg-[rgba(255,255,255,0.7)] dark:bg-[rgba(15,23,42,0.6)] dark:hover:bg-[rgba(15,23,42,0.8)]",
                   ].join(" ")}
                 >
                   <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${option.accent}`} />
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl" aria-hidden="true">{option.emoji}</span>
-                        <span className="text-base font-bold text-zinc-900 dark:text-zinc-50">{option.label}</span>
-                      </div>
-                      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{option.description}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${option.accent} text-2xl shadow-lg shadow-indigo-900/10`} aria-hidden="true">
+                      {option.emoji}
                     </div>
                     <span
                       className={[
-                        "mt-1 flex h-5 w-5 items-center justify-center rounded-full border-2",
+                        "flex h-5 w-5 items-center justify-center rounded-full border-2",
                         isSelected
                           ? "border-indigo-500 bg-indigo-500 text-white"
                           : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900",
@@ -204,21 +200,30 @@ export default function HomePage() {
                       {isSelected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
                     </span>
                   </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-white/70 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-300">
+                      {option.id === "TIC_TAC_TOE" ? "Classic" : "Quick"}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                      {isSelected ? "Open" : "Tap"}
+                    </span>
+                  </div>
                 </button>
               );
             })}
           </div>
 
           {selectedGame === "ROCK_PAPER_SCISSORS" && (
-            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/80 dark:bg-amber-950/20">
-              <label htmlFor="rps-rounds" className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
+            <div className="mt-4 rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 p-3 shadow-sm dark:border-amber-900/80 dark:from-amber-950/20 dark:to-orange-950/10">
+              <label htmlFor="rps-rounds" className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
                 Number of rounds
               </label>
               <select
                 id="rps-rounds"
                 value={selectedRounds}
                 onChange={(event) => setSelectedRounds(Number(event.target.value))}
-                className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2.5 text-base font-semibold text-zinc-900 outline-none focus:ring-2 focus:ring-amber-500 dark:border-amber-700 dark:bg-zinc-950 dark:text-zinc-50"
+                className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2.5 text-base font-semibold text-zinc-900 outline-none ring-0 transition focus:border-amber-500 dark:border-amber-700 dark:bg-zinc-950 dark:text-zinc-50"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
                   <option key={option} value={option}>

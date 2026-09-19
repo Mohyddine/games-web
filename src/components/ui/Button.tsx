@@ -16,15 +16,15 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const base =
-    "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900 disabled:opacity-50 disabled:pointer-events-none select-none active:scale-[0.97] cursor-pointer";
+    "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900 disabled:opacity-50 disabled:pointer-events-none select-none active:scale-[0.97] cursor-pointer";
 
   const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
     primary:
-      "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 shadow-sm shadow-indigo-900/20 dark:shadow-indigo-900/40",
+      "bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-400 hover:to-violet-400 active:from-indigo-600 active:to-violet-600 shadow-lg shadow-indigo-500/20 dark:shadow-indigo-900/40",
     secondary:
       "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
     outline:
-      "border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/60",
+      "border border-[var(--border)] bg-white/40 text-zinc-800 hover:bg-white/80 dark:bg-zinc-900/40 dark:text-zinc-200 dark:hover:bg-zinc-800/80",
     ghost:
       "bg-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100",
     danger:

@@ -17,7 +17,7 @@ export function SoundToggle() {
       type="button"
       aria-label={muted ? "Enable sound" : "Mute sound"}
       onClick={toggle}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-lg shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-100 dark:hover:bg-zinc-800"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-white/80 text-lg shadow-sm transition hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-100 dark:hover:bg-zinc-800"
     >
       {muted ? "🔇" : "🔊"}
     </button>
