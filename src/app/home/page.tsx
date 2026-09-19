@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/context/SessionContext";
 import { useRoom } from "@/context/RoomContext";
@@ -26,29 +27,16 @@ const GAME_OPTIONS: Array<{
   },
 ];
 
-function GameIcon({ gameType, isSelected }: { gameType: GameType; isSelected: boolean }) {
-  const stroke = isSelected ? "#f8fafc" : "#e2e8f0";
-
-  if (gameType === "TIC_TAC_TOE") {
-    return (
-      <svg viewBox="0 0 96 96" className="h-16 w-16" aria-hidden="true">
-        <g stroke={stroke} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none">
-          <path d="M32 22L18 36M18 22L32 36" />
-          <path d="M78 22L64 36M64 22L78 36" />
-          <circle cx="48" cy="48" r="14" />
-        </g>
-      </svg>
-    );
-  }
-
+function GameIcon({ gameType }: { gameType: GameType }) {
   return (
-    <svg viewBox="0 0 96 96" className="h-16 w-16" aria-hidden="true">
-      <g fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M25 72l18-42 18 42H25Z" opacity="0.9" />
-        <path d="M49 18h16l10 14-10 14H49L39 32l10-14Z" opacity="0.85" />
-        <path d="M14 36h16l10 14-10 14H14L4 50l10-14Z" opacity="0.8" />
-      </g>
-    </svg>
+    <Image
+      src={gameType === "TIC_TAC_TOE" ? "/xo-game.svg" : "/rps-game.svg"}
+      width={512}
+      height={512}
+      alt=""
+      className="h-full w-full rounded-[1.5rem] object-cover"
+      aria-hidden="true"
+    />
   );
 }
 
@@ -206,8 +194,8 @@ export default function HomePage() {
                 >
                   <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${option.accent}`} />
                   <div className="flex items-center justify-between">
-                    <div className={`flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-gradient-to-br ${option.accent} shadow-lg shadow-indigo-900/10`}>
-                      <GameIcon gameType={option.id} isSelected={isSelected} />
+                    <div className="h-20 w-20 overflow-hidden rounded-[1.5rem] shadow-lg shadow-indigo-900/10">
+                      <GameIcon gameType={option.id} />
                     </div>
                     <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/90 bg-white/20 text-[10px] font-bold text-slate-700 shadow-sm dark:border-zinc-800 dark:text-zinc-100">
                       {isSelected ? "✓" : ""}
